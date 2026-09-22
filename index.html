@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#007bff">
+    <meta name="description" content="Parcel Sticker Printing App">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple PWA Support -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Parcel Sticker">
+    
+    <title>Parcel Sticker Printing App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ================== HEADER WITH LOGO ================== -->
+    <header class="app-header no-print">
+        <div class="header-content">
+            <img src="logo.png" alt="Logo" class="app-logo" onerror="this.style.display='none'">
+            <h1 class="app-title">Parcel Sticker</h1>
+        </div>
+        <!-- PWA Install Button -->
+        <button id="installBtn" class="install-btn" style="display: none;">📲 Install App</button>
+    </header>
+
+    <div class="app-container no-print">
+        <h2>Parcel Sticker Details</h2>
+        
+        <!-- ================== TO SECTION ================== -->
+        <div class="form-group">
+            <label>TO (Name):</label>
+            <div class="input-with-btn">
+                <input type="text" id="toName" placeholder="Enter Receiver Name">
+                <button type="button" class="contact-btn" onclick="showContacts('to')" title="Saved Contacts">👥</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>TO (Address):</label>
+            <input type="text" id="toAddress" placeholder="Enter Receiver Address">
+        </div>
+        <div class="form-group">
+            <label>TO (Mobile):</label>
+            <input type="text" id="toMobile" placeholder="Enter Receiver Mobile">
+        </div>
+
+        <hr>
+
+        <!-- ================== FROM SECTION ================== -->
+        <div class="form-group">
+            <label>FROM (Name):</label>
+            <div class="input-with-btn">
+                <input type="text" id="fromName" placeholder="Enter Sender Name">
+                <button type="button" class="contact-btn" onclick="showContacts('from')" title="Saved Contacts">👥</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>FROM (Address):</label>
+            <input type="text" id="fromAddress" placeholder="Enter Sender Address">
+        </div>
+        <div class="form-group">
+            <label>FROM (Mobile):</label>
+            <input type="text" id="fromMobile" placeholder="Enter Sender Mobile">
+        </div>
+
+        <div class="form-group">
+            <label>Insurance Amount (₹):</label>
+            <input type="text" id="insuranceAmount" placeholder="e.g. 500" value="500">
+        </div>
+
+        <div class="form-group">
+            <button onclick="addEntry()" class="add-btn">➕ Add to List</button>
+        </div>
+
+        <div class="form-group">
+            <label>Quick Print (Select Box Position):</label>
+            <div class="box-grid-buttons" id="boxButtonsContainer"></div>
+        </div>
+
+        <hr>
+
+        <button onclick="printAll()" style="background-color: #28a745;">🖨️ Print All Stickers (Bulk)</button>
+        
+        <hr>
+        <h3>Added Entries (Max 21):</h3>
+        <div id="entryList" class="entry-list"></div>
+    </div>
+
+    <!-- Contacts Modal -->
+    <div id="contactsModal" class="modal no-print">
+        <div class="modal-content">
+            <span class="close" onclick="closeContactsModal()">&times;</span>
+            <h3 id="contactsTitle">Saved Contacts</h3>
+            <input type="text" id="contactsSearch" placeholder="🔍 Search by Name/Address/Mobile..." oninput="filterContactsList()" class="modal-search">
+            <div id="contactsList" class="modal-list"></div>
+            <div class="contacts-actions">
+                <button onclick="saveCurrentContact()" id="saveContactBtn" style="background-color: #28a745;">💾 Save Current Form as Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="a4-page" id="a4Page"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
