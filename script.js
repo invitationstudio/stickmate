@@ -97,7 +97,7 @@ function renderContactsList(contacts) {
     list.innerHTML = '';
     
     if (contacts.length === 0) {
-        list.innerHTML = '<p style="text-align:center; color:#999; padding:15px;">Kाही contacts save keleले nahit. Khali "Save Current Form as Contact" button dabla.</p>';
+        list.innerHTML = '<p style="text-align:center; color:#999; padding:15px;">काही contacts save केलेले नाहीत. खाली "Save Current Form as Contact" बटण दाबा.</p>';
         return;
     }
     

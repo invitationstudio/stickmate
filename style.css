@@ -390,10 +390,31 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     .box-btn { font-size: 11px; padding: 6px 2px; }
 }
 
-/* PRINT SPECIFIC */
+/* ========================================= */
+/* PRINT SPECIFIC - BROWSER HEADER/FOOTER HIDE */
+/* ========================================= */
 @media print {
+    /* @page rule - Browser header/footer band kara */
+    @page {
+        margin: 0.5cm;
+        size: A4 portrait;
+    }
+    
+    /* Sagळं non-print hide kara */
     .no-print { display: none !important; }
-    body { background: white; margin: 0; padding: 0; }
+    .app-header { display: none !important; }
+    .app-container { display: none !important; }
+    .modal { display: none !important; }
+    .install-btn { display: none !important; }
+    
+    /* Body reset */
+    body { 
+        background: white; 
+        margin: 0; 
+        padding: 0; 
+    }
+    
+    /* A4 page print madhe disel */
     .a4-page {
         display: block !important; 
         margin: 0;
