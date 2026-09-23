@@ -3,6 +3,7 @@
     "short_name": "StickMate",
     "description": "StickMate - Your Parcel's Best Mate. Fast parcel sticker printing app.",
     "start_url": "./index.html",
+    "scope": "./",
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#ffffff",

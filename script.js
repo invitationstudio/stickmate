@@ -1,3 +1,7 @@
+// ========================================= */
+// STICKMATE - SCRIPT.JS v2
+// ========================================= */
+
 const a4Page = document.getElementById('a4Page');
 const entryListDiv = document.getElementById('entryList');
 const boxButtonsContainer = document.getElementById('boxButtonsContainer');
@@ -189,8 +193,7 @@ function generateBoxButtons() {
         "R4-Left", "R4-Center", "R4-Right",
         "R5-Left", "R5-Center", "R5-Right",
         "R6-Left", "R6-Center", "R6-Right",
-        "R7-Left", "R7-Center", "R7-Right",
-        "R8-Left", "R8-Center", "R8-Right"
+        "R7-Left", "R7-Center", "R7-Right"
     ];
     for (let i = 1; i <= TOTAL_BOXES; i++) {
         const btn = document.createElement('button');
@@ -264,7 +267,7 @@ function getPosition(boxNumber) {
     return { left: col * BOX_W, top: row * BOX_H };
 }
 
-// ** UPDATED: FROM Address ani Mobile ekाच line var **
+// ================== CREATE STICKER BOX ==================
 function createStickerBox(boxNumber, data) {
     const pos = getPosition(boxNumber);
     const box = document.createElement('div');
@@ -272,8 +275,11 @@ function createStickerBox(boxNumber, data) {
     box.style.left = pos.left + 'cm';
     box.style.top = pos.top + 'cm';
 
-    // FROM Address + Mobile ekत्र (Space ni separate)
-    const fromAddressMobile = `${data.fromAddress}  ${data.fromMobile}`;
+    // FROM Address + Mobile ekत्र
+    const shortAddress = data.fromAddress.length > 12 
+        ? data.fromAddress.substring(0, 12) + '..' 
+        : data.fromAddress;
+    const fromAddressMobile = `${shortAddress} ${data.fromMobile}`;
 
     box.innerHTML = `
         <div class="insurance-box">
@@ -322,25 +328,76 @@ function printAll() {
     window.print();
 }
 
-// ================== INITIALIZE ==================
-window.onload = () => {
-    renderEntryList();
-    generateBoxButtons();
-};
-// ================== PWA INSTALL LOGIC ==================
+// ========================================= */
+// PWA INSTALL LOGIC (ENHANCED FOR MOBILE)
+// ========================================= */
 let deferredPrompt;
 
-window.addEventListener('beforeinstallprompt', (e) => {
-    // Default browser prompt rokhा
-    e.preventDefault();
-    // Event save kara
-    deferredPrompt = e;
-    // Install button dाखवा
+// App already installed ahe ka check kara
+function isAppInstalled() {
+    // Standalone mode madhe ahe ka?
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        return true;
+    }
+    // iOS Safari standalone
+    if (window.navigator.standalone === true) {
+        return true;
+    }
+    return false;
+}
+
+// Install button dाखवा
+function showInstallButton() {
     const installBtn = document.getElementById('installBtn');
-    if (installBtn) {
+    if (installBtn && !isAppInstalled()) {
         installBtn.style.display = 'block';
     }
+}
+
+// Install button hide kara
+function hideInstallButton() {
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.style.display = 'none';
+    }
+}
+
+// beforeinstallprompt event - Chrome/Edge/Android
+window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('✅ beforeinstallprompt fired');
+    e.preventDefault();
+    deferredPrompt = e;
+    showInstallButton();
 });
+
+// iOS kinva manual install sathi instructions
+function showInstallInstructions() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    let message = '';
+    
+    if (isIOS) {
+        message = `📱 iPhone/iPad var Install Kase Karaycha:\n\n` +
+                  `1. Safari ughada (Chrome nahi)\n` +
+                  `2. Khali 'Share' button (□↑) dabla\n` +
+                  `3. 'Add to Home Screen' select kara\n` +
+                  `4. 'Add' dabla`;
+    } else if (isAndroid) {
+        message = `📱 Android var Install Kase Karaycha:\n\n` +
+                  `1. Chrome ughada\n` +
+                  `2. Ujव्या corner la 3 dots (⋮) dabla\n` +
+                  `3. 'Install app' kinva 'Add to Home screen' select kara\n` +
+                  `4. 'Install' dabla`;
+    } else {
+        message = `💻 Desktop var Install Kase Karaycha:\n\n` +
+                  `1. Address bar madhe Install icon (⊕) disel\n` +
+                  `2. Tyavar click kara\n` +
+                  `3. 'Install' dabla`;
+    }
+    
+    alert(message);
+}
 
 // Install button click
 document.addEventListener('DOMContentLoaded', () => {
@@ -348,23 +405,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (installBtn) {
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
+                // Chrome/Android - Native prompt dाखवा
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 console.log(`User response: ${outcome}`);
                 deferredPrompt = null;
-                installBtn.style.display = 'none';
+                hideInstallButton();
+            } else {
+                // iOS kinva manual install - Instructions dाखवा
+                showInstallInstructions();
             }
         });
+    }
+    
+    // Jar app already installed asel tar button hide kara
+    if (isAppInstalled()) {
+        hideInstallButton();
+    }
+    
+    // iOS var button dाखवा (Jar installed nahi asel tar)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS && !isAppInstalled()) {
+        showInstallButton();
     }
 });
 
 // App install zali tar button hide kara
 window.addEventListener('appinstalled', () => {
-    console.log('PWA installed successfully');
-    const installBtn = document.getElementById('installBtn');
-    if (installBtn) {
-        installBtn.style.display = 'none';
-    }
+    console.log('✅ PWA installed successfully');
+    hideInstallButton();
+    deferredPrompt = null;
 });
 
 // ================== SERVICE WORKER REGISTER ==================
@@ -372,10 +442,22 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
             .then(registration => {
-                console.log('ServiceWorker registered:', registration.scope);
+                console.log('✅ ServiceWorker registered:', registration.scope);
             })
             .catch(error => {
-                console.log('ServiceWorker registration failed:', error);
+                console.log('❌ ServiceWorker registration failed:', error);
             });
     });
 }
+
+// ================== INITIALIZE ==================
+window.onload = () => {
+    renderEntryList();
+    generateBoxButtons();
+    
+    // iOS var install button dाखवा (Jar installed nahi asel tar)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS && !isAppInstalled()) {
+        setTimeout(showInstallButton, 1000);
+    }
+};
