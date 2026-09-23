@@ -1,5 +1,5 @@
 // ========================================= */
-// STICKMATE - SCRIPT.JS v3 (FINAL + AUTO UPDATE)
+// STICKMATE - SCRIPT.JS v3 (FINAL + AUTO UPDATE + ENTER NAVIGATION)
 // ========================================= */
 
 const a4Page = document.getElementById('a4Page');
@@ -435,6 +435,45 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ========================================= */
+// ENTER KEY NAVIGATION (Next Field madhe shift)
+// ========================================= */
+document.addEventListener('DOMContentLoaded', () => {
+    // Sagle input fields cha order
+    const inputOrder = [
+        'toName',
+        'toAddress',
+        'toMobile',
+        'fromName',
+        'fromAddress',
+        'fromMobile',
+        'insuranceAmount'
+    ];
+
+    inputOrder.forEach((fieldId, index) => {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+
+        field.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+
+                const nextIndex = index + 1;
+                if (nextIndex < inputOrder.length) {
+                    const nextField = document.getElementById(inputOrder[nextIndex]);
+                    if (nextField) {
+                        nextField.focus();
+                        nextField.select();
+                    }
+                } else {
+                    // Shevatcha field (insurance) madhe Enter dabli tar Add to List
+                    addEntry();
+                }
+            }
+        });
+    });
+});
+
+// ========================================= */
 // PWA INSTALL LOGIC
 // ========================================= */
 let deferredPrompt;
@@ -535,16 +574,11 @@ window.addEventListener('appinstalled', () => {
 // ========================================= */
 const APP_VERSION = 'v3'; // Update karta tar v4, v5 kara
 
-// ========================================= */
-// UPDATE POPUP DAKHAVNYACHA FUNCTION
-// ========================================= */
 function showUpdatePopup() {
-    // Jar popup already asel tar parat dाखवू naka
     if (document.getElementById('updatePopup')) {
         return;
     }
     
-    // Popup HTML tayar kara
     const popup = document.createElement('div');
     popup.id = 'updatePopup';
     popup.className = 'update-popup';
@@ -562,7 +596,6 @@ function showUpdatePopup() {
     
     document.body.appendChild(popup);
     
-    // Animation sathi
     setTimeout(() => {
         popup.classList.add('show');
     }, 100);
@@ -579,7 +612,6 @@ function closeUpdatePopup() {
 }
 
 function doUpdate() {
-    // Sagle caches clear kara
     if ('caches' in window) {
         caches.keys().then(cacheNames => {
             return Promise.all(
@@ -589,16 +621,13 @@ function doUpdate() {
                 })
             );
         }).then(() => {
-            // Service Worker unregister kara
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(registrations => {
                     return Promise.all(registrations.map(r => r.unregister()));
                 });
             }
         }).then(() => {
-            // Version update kara
             localStorage.setItem('app_version', APP_VERSION);
-            // Page reload kara (cache bypass sathi)
             window.location.reload(true);
         });
     } else {
@@ -606,21 +635,16 @@ function doUpdate() {
     }
 }
 
-// ========================================= */
-// VERSION CHECK (App ughadतana)
-// ========================================= */
 function checkVersion() {
     const savedVersion = localStorage.getItem('app_version');
     console.log('📱 Saved Version:', savedVersion, '| Current Version:', APP_VERSION);
     
-    // Jar saved version nasel (pratham veli) tar current version save kara
     if (savedVersion === null) {
         localStorage.setItem('app_version', APP_VERSION);
         console.log('✅ Pratham veli - Version saved:', APP_VERSION);
         return false;
     }
     
-    // Jar version vegla asel tar update popup dाखवा
     if (savedVersion !== APP_VERSION) {
         console.log('🔄 Version mismatch! Update available!');
         showUpdatePopup();
@@ -631,21 +655,16 @@ function checkVersion() {
     return false;
 }
 
-// ========================================= */
-// SERVICE WORKER + UPDATE CHECK
-// ========================================= */
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
             .then(registration => {
                 console.log('✅ ServiceWorker registered:', registration.scope);
                 
-                // Pratyek 30 seconds la update check kara
                 setInterval(() => {
                     registration.update();
                 }, 30000);
                 
-                // Jar navin service worker sapadla tar
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
                     console.log('🔄 New Service Worker found!');
@@ -664,14 +683,9 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ========================================= */
-// AUTO UPDATE CHECK (App ughadतana)
-// ========================================= */
 document.addEventListener('DOMContentLoaded', () => {
-    // Version check kara
     checkVersion();
     
-    // Har 60 seconds la version check kara
     setInterval(() => {
         checkVersion();
     }, 60000);
@@ -689,3 +703,117 @@ window.onload = () => {
         setTimeout(showInstallButton, 1000);
     }
 };
+// ========================================= */
+// KEYBOARD SHORTCUTS
+// ========================================= */
+
+document.addEventListener('keydown', (e) => {
+    // ========================================= */
+    // ALT + P = PREVIEW
+    // ========================================= */
+    if (e.altKey && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        console.log('⌨️ Alt+P - Preview');
+        previewCurrentEntry();
+        return;
+    }
+    
+    // ========================================= */
+    // CTRL + P = PRINT (Default browser print)
+    // ========================================= */
+    if (e.ctrlKey && (e.key === 'p' || e.key === 'P')) {
+        // Browser cha default print dialog ughadel
+        // Aapan fakt printAll() call karto
+        e.preventDefault();
+        console.log('⌨️ Ctrl+P - Print');
+        
+        // Jar form madhe data asel tar print kara
+        const data = getFormData();
+        if (data.toName !== "N/A" || data.toAddress !== "N/A" || data.toMobile !== "N/A") {
+            printSingleBox(1);
+        } else if (entries.length > 0) {
+            printAll();
+        } else {
+            alert("कृपया आधी फॉर्ममध्ये माहिती भरा kinva Entry Add करा!");
+        }
+        return;
+    }
+    
+    // ========================================= */
+    // CTRL + S = SAVE TO CONTACTS (TO + FROM)
+    // ========================================= */
+    if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        console.log('⌨️ Ctrl+S - Save to Contacts');
+        
+        const toName = document.getElementById('toName').value.trim();
+        const toAddress = document.getElementById('toAddress').value.trim();
+        const toMobile = document.getElementById('toMobile').value.trim();
+        
+        const fromName = document.getElementById('fromName').value.trim();
+        const fromAddress = document.getElementById('fromAddress').value.trim();
+        const fromMobile = document.getElementById('fromMobile').value.trim();
+        
+        let savedCount = 0;
+        
+        // TO contact save kara (Jar name asel tar)
+        if (toName) {
+            saveContact('to', {
+                name: toName,
+                address: toAddress,
+                mobile: toMobile
+            });
+            savedCount++;
+            console.log('✅ TO contact saved:', toName);
+        }
+        
+        // FROM contact save kara (Jar name asel tar)
+        if (fromName) {
+            saveContact('from', {
+                name: fromName,
+                address: fromAddress,
+                mobile: fromMobile
+            });
+            savedCount++;
+            console.log('✅ FROM contact saved:', fromName);
+        }
+        
+        // Sagle fields pan save kara
+        saveAllFields();
+        
+        // User la message dाखवा
+        if (savedCount > 0) {
+            alert(`✅ ${savedCount} contact${savedCount > 1 ? 's' : ''} save zala${savedCount > 1 ? 't' : ''}!\n\n` +
+                  `📱 TO Contacts मध्ये पाहण्यासाठी TO Name च्या शेजारी 👥 बटण दाबा..\n` +
+                  `📱 FROM Contacts मध्ये पाहण्यासाठी FROM Name च्या शेजारी 👥 बटण दाबा.`);
+        } else {
+            alert("⚠️ Krupaya aadhi Name bhara (TO kinva FROM), mag Ctrl+S dabla!");
+        }
+        return;
+    }
+    
+    // ========================================= */
+    // ENTER = NEXT FIELD (Existing)
+    // ========================================= */
+    // Ha code existing ahe, tyala thevू naka
+});
+
+// ========================================= */
+// PLUS BUTTON SHORTCUT (Add to List)
+// ========================================= */
+document.addEventListener('keydown', (e) => {
+    // Jar user "+" key dabli tar Add to List
+    if (e.key === '+' || e.key === '=') {
+        // Jar input field madhe nasel tar
+        const activeElement = document.activeElement;
+        const isInputFocused = activeElement && 
+            (activeElement.tagName === 'INPUT' || 
+             activeElement.tagName === 'TEXTAREA');
+        
+        if (!isInputFocused) {
+            e.preventDefault();
+            console.log('⌨️ + key - Add to List');
+            addEntry();
+        }
+    }
+});
