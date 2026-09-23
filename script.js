@@ -340,7 +340,7 @@ function previewCurrentEntry() {
     const data = getFormData();
     
     if (data.toName === "N/A" && data.toAddress === "N/A" && data.toMobile === "N/A") {
-        alert("Krupaya aadhi form madhe details bhara!");
+        alert("कृपया आधी फॉर्ममध्ये माहिती भरा!");
         return;
     }
     
