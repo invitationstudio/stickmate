@@ -68,7 +68,7 @@ function deleteContact(type, index) {
     const contacts = getContacts(type);
     const contactName = contacts[index].name;
     
-    if (!confirm(`तुम्हाला "${contactName}" हा contact डिलीट करायचा आहे का?`)) {
+    if (!confirm(`तुम्हाला "${contactName}" हा Contact डिलीट करायचा आहे का?`)) {
         return;
     }
     
