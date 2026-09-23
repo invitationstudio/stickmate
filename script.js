@@ -165,7 +165,7 @@ function saveCurrentContact() {
     const mobile = document.getElementById(prefix + 'Mobile').value.trim();
     
     if (!name) {
-        alert("Krupaya aadhi Name bhara, mag save kara!");
+        alert("कृपया आधी Name भरा, मग save करा!");
         return;
     }
     saveContact(prefix, { name, address, mobile });
@@ -306,7 +306,7 @@ function createStickerBox(boxNumber, data) {
 function printSingleBox(boxNumber) {
     const data = getFormData();
     if (data.toName === "N/A" && data.toAddress === "N/A" && data.toMobile === "N/A") {
-        alert("Krupaya aadhi form madhe details bhara!");
+        alert("कृपया आधी फॉर्ममध्ये माहिती भरा!");
         return;
     }
     saveAllFields();
