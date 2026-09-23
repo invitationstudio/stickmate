@@ -424,3 +424,211 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
         height: 100%;
     }
 }
+/* ========================================= */
+/* ADD TO LIST + PREVIEW BUTTON ROW */
+/* ========================================= */
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.button-row .add-btn {
+    flex: 1;
+}
+
+.preview-btn {
+    width: auto;
+    padding: 8px 20px;
+    background-color: #6f42c1;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-block;
+    white-space: nowrap;
+}
+.preview-btn:hover {
+    background-color: #5a32a3;
+}
+
+/* ========================================= */
+/* PREVIEW MODAL */
+/* ========================================= */
+.preview-modal {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    overflow-y: auto;
+}
+
+.preview-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+    animation: previewZoom 0.3s ease-out;
+}
+
+@keyframes previewZoom {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.preview-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #aaa;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+.preview-close:hover { color: #000; }
+
+.preview-content h3 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.preview-note {
+    text-align: center;
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
+.preview-box-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #ddd;
+    margin-bottom: 20px;
+    min-height: 180px;
+}
+
+/* Preview madhil sticker box */
+.preview-box-container .sticker-box {
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: scale(1.5);
+    transform-origin: center center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.print-preview-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.print-preview-btn:hover {
+    background-color: #218838;
+}
+
+/* Mobile Preview Adjust */
+@media (max-width: 600px) {
+    .button-row {
+        flex-direction: row;
+        gap: 8px;
+    }
+    .preview-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+    .add-btn {
+        font-size: 13px;
+        padding: 8px 14px;
+    }
+    .preview-box-container .sticker-box {
+        transform: scale(1.2);
+    }
+    .preview-content {
+        margin: 10% auto;
+        padding: 20px;
+    }
+}
+
+/* Print madhe preview modal hide kara */
+@media print {
+    .preview-modal {
+        display: none !important;
+    }
+}
+/* ========================================= */
+/* ENTRY ACTIONS (Preview + Remove Buttons) */
+/* ========================================= */
+.entry-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.entry-preview-btn {
+    width: auto;
+    padding: 4px 10px;
+    background-color: #6f42c1;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.entry-preview-btn:hover {
+    background-color: #5a32a3;
+}
+
+.entry-remove-btn {
+    width: auto;
+    padding: 4px 10px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.entry-remove-btn:hover {
+    background-color: #c82333;
+}
+
+/* Mobile madhe buttons stack kara */
+@media (max-width: 400px) {
+    .entry-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .entry-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}

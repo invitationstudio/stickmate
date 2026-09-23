@@ -1,5 +1,5 @@
 // ========================================= */
-// STICKMATE - SCRIPT.JS v2
+// STICKMATE - SCRIPT.JS v3 (FINAL)
 // ========================================= */
 
 const a4Page = document.getElementById('a4Page');
@@ -230,6 +230,7 @@ function getFormData() {
     };
 }
 
+// ** UPDATED: Preview button Remove chya aadhi **
 function renderEntryList() {
     entryListDiv.innerHTML = '';
     entries.forEach((entry, index) => {
@@ -237,7 +238,10 @@ function renderEntryList() {
         div.className = 'entry-item';
         div.innerHTML = `
             <span><b>Box ${index + 1}:</b> ${entry.toName} (${entry.toMobile})</span>
-            <button onclick="removeEntry(${index})">Remove</button>
+            <div class="entry-actions">
+                <button class="entry-preview-btn" onclick="previewEntry(${index})">👁️ Preview</button>
+                <button class="entry-remove-btn" onclick="removeEntry(${index})">Remove</button>
+            </div>
         `;
         entryListDiv.appendChild(div);
     });
@@ -316,7 +320,7 @@ function printSingleBox(boxNumber) {
 
 function printAll() {
     if (entries.length === 0) {
-        alert("Krupaya aadhi entry add kara!");
+        alert("कृपया आधी Entry Add करा!");
         return;
     }
     saveAllFields();
@@ -329,17 +333,129 @@ function printAll() {
 }
 
 // ========================================= */
+// PREVIEW FUNCTIONALITY
+// ========================================= */
+let previewData = null;
+let previewBoxNumber = 1;  // Kontya box var print karaycha te save kara
+
+// ** Form madhun Preview **
+function previewCurrentEntry() {
+    const data = getFormData();
+    
+    if (data.toName === "N/A" && data.toAddress === "N/A" && data.toMobile === "N/A") {
+        alert("Krupaya aadhi form madhe details bhara!");
+        return;
+    }
+    
+    previewData = data;
+    previewBoxNumber = 1; // Form madhun preview kelyavar Box 1 var print hoil
+    
+    renderPreviewBox(data);
+    document.getElementById('previewModal').style.display = 'block';
+}
+
+// ** Entry List madhun Preview (Specific Box) **
+function previewEntry(index) {
+    if (index < 0 || index >= entries.length) {
+        alert("Entry sapadli nahi!");
+        return;
+    }
+    
+    const data = entries[index];
+    previewData = data;
+    previewBoxNumber = index + 1; // Tya entry cha box number var print hoil
+    
+    renderPreviewBox(data);
+    document.getElementById('previewModal').style.display = 'block';
+}
+
+// ** Preview Box Render **
+function renderPreviewBox(data) {
+    const previewContainer = document.getElementById('previewBoxContainer');
+    previewContainer.innerHTML = '';
+    
+    const tempBox = document.createElement('div');
+    tempBox.className = 'sticker-box';
+    
+    const shortAddress = data.fromAddress.length > 12 
+        ? data.fromAddress.substring(0, 12) + '..' 
+        : data.fromAddress;
+    const fromAddressMobile = `${shortAddress} ${data.fromMobile}`;
+    
+    tempBox.innerHTML = `
+        <div class="insurance-box">
+            <span>INSURANCE</span>
+            <span>₹${data.insurance}</span>
+        </div>
+        <div class="to-section">
+            <div class="label">TO,</div>
+            <span class="value">${data.toName}</span>
+            <span class="value">${data.toAddress}</span>
+            <span class="value">${data.toMobile}</span>
+        </div>
+        <div class="from-section">
+            <div class="label">FROM,</div>
+            <span class="value">${data.fromName}</span>
+            <span class="value">${fromAddressMobile}</span>
+        </div>
+    `;
+    
+    previewContainer.appendChild(tempBox);
+}
+
+function closePreviewModal() {
+    document.getElementById('previewModal').style.display = 'none';
+    previewData = null;
+}
+
+function printPreview() {
+    if (!previewData) {
+        alert("Kाही data nahi ahe!");
+        return;
+    }
+    
+    // Preview modal band kara
+    document.getElementById('previewModal').style.display = 'none';
+    
+    // Data save kara
+    saveAllFields();
+    
+    // A4 page var box tayar kara (Specific box number var)
+    a4Page.innerHTML = '';
+    const box = createStickerBox(previewBoxNumber, previewData);
+    a4Page.appendChild(box);
+    
+    // Print kara
+    setTimeout(() => {
+        window.print();
+    }, 200);
+}
+
+// Preview modal baher click kelyavar band kara
+window.addEventListener('click', (e) => {
+    const previewModal = document.getElementById('previewModal');
+    if (e.target === previewModal) {
+        closePreviewModal();
+    }
+});
+
+// ESC key dabli tar preview band kara
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closePreviewModal();
+    }
+});
+
+// ========================================= */
 // PWA INSTALL LOGIC (ENHANCED FOR MOBILE)
 // ========================================= */
 let deferredPrompt;
 
 // App already installed ahe ka check kara
 function isAppInstalled() {
-    // Standalone mode madhe ahe ka?
     if (window.matchMedia('(display-mode: standalone)').matches) {
         return true;
     }
-    // iOS Safari standalone
     if (window.navigator.standalone === true) {
         return true;
     }
@@ -405,25 +521,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (installBtn) {
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
-                // Chrome/Android - Native prompt dाखवा
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 console.log(`User response: ${outcome}`);
                 deferredPrompt = null;
                 hideInstallButton();
             } else {
-                // iOS kinva manual install - Instructions dाखवा
                 showInstallInstructions();
             }
         });
     }
     
-    // Jar app already installed asel tar button hide kara
     if (isAppInstalled()) {
         hideInstallButton();
     }
     
-    // iOS var button dाखवा (Jar installed nahi asel tar)
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS && !isAppInstalled()) {
         showInstallButton();
@@ -455,7 +567,6 @@ window.onload = () => {
     renderEntryList();
     generateBoxButtons();
     
-    // iOS var install button dाखवा (Jar installed nahi asel tar)
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS && !isAppInstalled()) {
         setTimeout(showInstallButton, 1000);

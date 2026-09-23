@@ -92,8 +92,20 @@
             <input type="text" id="insuranceAmount" placeholder="e.g. 500" value="500">
         </div>
 
-        <div class="form-group">
+                <div class="form-group button-row">
             <button onclick="addEntry()" class="add-btn">➕ Add to List</button>
+            <button onclick="previewCurrentEntry()" class="preview-btn">👁️ Preview</button>
+        </div>
+
+        <!-- Preview Modal -->
+        <div id="previewModal" class="preview-modal no-print">
+            <div class="preview-content">
+                <span class="preview-close" onclick="closePreviewModal()">&times;</span>
+                <h3>📋 Sticker Preview</h3>
+                <p class="preview-note">Ha preview ahe - Print karayla "Print" button dabla</p>
+                <div id="previewBoxContainer" class="preview-box-container"></div>
+                <button onclick="printPreview()" class="print-preview-btn">🖨️ Print This Sticker</button>
+            </div>
         </div>
 
         <div class="form-group">
