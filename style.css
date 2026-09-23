@@ -62,7 +62,9 @@
     50% { transform: scale(1.05); }
 }
 
-/* General Styles */
+/* ========================================= */
+/* GENERAL STYLES */
+/* ========================================= */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f9;
@@ -120,7 +122,9 @@ button { width: 100%; padding: 12px; color: white; border: none; border-radius: 
 button:hover { opacity: 0.9; }
 hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
 
-/* BOX POSITION BUTTONS */
+/* ========================================= */
+/* BOX POSITION BUTTONS (3 COLUMNS) */
+/* ========================================= */
 .box-grid-buttons {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -147,7 +151,9 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
 .box-btn small { font-size: 9px; font-weight: normal; display: block; margin-top: 2px; opacity: 0.9; }
 .box-btn:hover { background-color: #138496; }
 
-/* Entry List */
+/* ========================================= */
+/* ENTRY LIST */
+/* ========================================= */
 .entry-list {
     max-height: 250px;
     overflow-y: auto;
@@ -162,270 +168,52 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     padding: 8px;
     border-bottom: 1px solid #eee;
     font-size: 13px;
+    gap: 10px;
 }
 .entry-item:last-child { border-bottom: none; }
-.entry-item button {
+
+/* ENTRY ACTIONS (Preview + Remove) */
+.entry-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.entry-preview-btn {
     width: auto;
     padding: 4px 10px;
-    background-color: #dc3545;
-    font-size: 12px;
-}
-
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-}
-.modal-content {
-    background-color: #fff;
-    margin: 8% auto;
-    padding: 20px;
-    border-radius: 8px;
-    width: 80%;
-    max-width: 450px;
-    max-height: 75vh;
-    overflow-y: auto;
-}
-.close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-.close:hover { color: #000; }
-.modal-search {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
+    background-color: #6f42c1;
+    color: white;
+    border: none;
     border-radius: 4px;
-    box-sizing: border-box;
-    margin-top: 10px;
-    font-size: 14px;
-}
-.modal-list { margin-top: 10px; }
-
-.modal-list-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    font-size: 14px;
-    border-left: 3px solid transparent;
-    gap: 8px;
-}
-.modal-list-item:hover { 
-    background-color: #f0f0f0; 
-    border-left-color: #007bff;
-}
-
-.contact-info {
-    flex: 1;
-    cursor: pointer;
-}
-.contact-info .contact-name {
-    font-weight: bold;
-    color: #007bff;
-    display: block;
-}
-.contact-info .contact-detail {
     font-size: 12px;
-    color: #666;
-    display: block;
-    margin-top: 2px;
+    cursor: pointer;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.entry-preview-btn:hover {
+    background-color: #5a32a3;
 }
 
-.contact-delete-btn {
-    width: 35px;
-    height: 35px;
-    padding: 0;
+.entry-remove-btn {
+    width: auto;
+    padding: 4px 10px;
     background-color: #dc3545;
     color: white;
     border: none;
     border-radius: 4px;
+    font-size: 12px;
     cursor: pointer;
-    font-size: 16px;
-    flex-shrink: 0;
+    font-weight: bold;
+    white-space: nowrap;
 }
-.contact-delete-btn:hover { background-color: #c82333; }
-
-.contacts-actions {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
-}
-.contacts-actions button { background-color: #28a745; }
-
-/* A4 Paper Setup */
-.a4-page {
-    width: 21cm;
-    height: 29.7cm;
-    background: white;
-    margin: 20px auto;
-    padding: 0; 
-    box-sizing: border-box;
-    position: relative; 
-    border: 1px solid #ddd; 
-    display: none; 
+.entry-remove-btn:hover {
+    background-color: #c82333;
 }
 
 /* ========================================= */
-/* STICKER BOX - AJUN LAHAN KELA (GAP SATHI) */
-/* ========================================= */
-.sticker-box {
-    width: 5.4cm;
-    height: 2.9cm;
-    border: 1px solid #666;
-    box-sizing: border-box;
-    position: absolute;
-    padding: 4px 6px;
-    font-size: 10px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    line-height: 1.2;
-}
-
-/* Insurance Box */
-.insurance-box {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 1.5cm;
-    height: 0.8cm;
-    border: 1px solid #666;
-    font-size: 7px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: #fff;
-    z-index: 10;
-    padding: 1px;
-}
-.insurance-box span { 
-    font-weight: bold; 
-    font-size: 8px;
-    line-height: 1.1;
-}
-
-.to-section { 
-    margin-top: 3px; 
-    padding-right: 1.5cm; 
-    line-height: 1.25;
-}
-.to-section .label { 
-    font-weight: bold; 
-    font-size: 10px; 
-    margin-bottom: 1px; 
-}
-.to-section .value { 
-    font-size: 10px; 
-    display: block; 
-    margin-bottom: 0px; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    max-width: 100%; 
-}
-
-.from-section { 
-    margin-top: auto; 
-    border-top: 1px solid #666; 
-    padding-top: 2px; 
-    line-height: 1.25;
-}
-.from-section .label { 
-    font-weight: bold; 
-    font-size: 10px; 
-    margin-bottom: 1px; 
-}
-.from-section .value { 
-    font-size: 10px; 
-    display: block; 
-    margin-bottom: 0px; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    max-width: 100%; 
-}
-
-.label { font-weight: bold; font-size: 10px; margin-bottom: 1px; }
-.value { font-size: 10px; display: block; margin-bottom: 0px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-
-/* MOBILE VIEW */
-@media (max-width: 600px) {
-    body { padding: 10px; }
-    .app-container { padding: 15px; }
-    .app-header {
-        padding: 10px 15px;
-        margin: -10px -10px 15px -10px;
-    }
-    .app-logo {
-        width: 38px;
-        height: 38px;
-    }
-    .app-title {
-        font-size: 16px;
-    }
-    .install-btn {
-        padding: 6px 12px;
-        font-size: 11px;
-    }
-    .box-grid-buttons { grid-template-columns: repeat(3, 1fr); gap: 5px; }
-    .box-btn { font-size: 12px; padding: 8px 2px; }
-    .box-btn small { font-size: 8px; }
-    .form-group label { font-size: 13px; }
-    .form-group input { font-size: 14px; padding: 7px; }
-    h2 { font-size: 20px; }
-    h3 { font-size: 16px; }
-    .modal-content { width: 92%; margin: 15% auto; padding: 15px; }
-}
-
-@media (max-width: 400px) {
-    .box-grid-buttons { grid-template-columns: repeat(3, 1fr); gap: 4px; }
-    .box-btn { font-size: 11px; padding: 6px 2px; }
-}
-
-/* ========================================= */
-/* PRINT SPECIFIC - BROWSER HEADER/FOOTER HIDE */
-/* ========================================= */
-@media print {
-    /* @page rule - Browser header/footer band kara */
-    @page {
-        margin: 0.5cm;
-        size: A4 portrait;
-    }
-    
-    /* Sagळं non-print hide kara */
-    .no-print { display: none !important; }
-    .app-header { display: none !important; }
-    .app-container { display: none !important; }
-    .modal { display: none !important; }
-    .install-btn { display: none !important; }
-    
-    /* Body reset */
-    body { 
-        background: white; 
-        margin: 0; 
-        padding: 0; 
-    }
-    
-    /* A4 page print madhe disel */
-    .a4-page {
-        display: block !important; 
-        margin: 0;
-        padding: 0;
-        border: none;
-        width: 100%;
-        height: 100%;
-    }
-}
-/* ========================================= */
-/* ADD TO LIST + PREVIEW BUTTON ROW */
+/* BUTTON ROW (Add to List + Preview) */
 /* ========================================= */
 .button-row {
     display: flex;
@@ -550,8 +338,226 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     background-color: #218838;
 }
 
-/* Mobile Preview Adjust */
+/* ========================================= */
+/* MODAL (Contacts) */
+/* ========================================= */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+.modal-content {
+    background-color: #fff;
+    margin: 8% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 450px;
+    max-height: 75vh;
+    overflow-y: auto;
+}
+.close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+.close:hover { color: #000; }
+.modal-search {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 10px;
+    font-size: 14px;
+}
+.modal-list { margin-top: 10px; }
+
+.modal-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+    gap: 8px;
+}
+.modal-list-item:hover { 
+    background-color: #f0f0f0; 
+    border-left-color: #007bff;
+}
+
+.contact-info {
+    flex: 1;
+    cursor: pointer;
+}
+.contact-info .contact-name {
+    font-weight: bold;
+    color: #007bff;
+    display: block;
+}
+.contact-info .contact-detail {
+    font-size: 12px;
+    color: #666;
+    display: block;
+    margin-top: 2px;
+}
+
+.contact-delete-btn {
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+.contact-delete-btn:hover { background-color: #c82333; }
+
+.contacts-actions {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+.contacts-actions button { background-color: #28a745; }
+
+/* ========================================= */
+/* A4 PAPER SETUP */
+/* ========================================= */
+.a4-page {
+    width: 21cm;
+    height: 29.7cm;
+    background: white;
+    margin: 20px auto;
+    padding: 0; 
+    box-sizing: border-box;
+    position: relative; 
+    border: 1px solid #ddd; 
+    display: none; 
+}
+
+/* ========================================= */
+/* STICKER BOX - 5.4cm × 2.9cm (GAP SATHI) */
+/* ========================================= */
+.sticker-box {
+    width: 5.4cm;
+    height: 2.9cm;
+    border: 1px solid #666;
+    box-sizing: border-box;
+    position: absolute;
+    padding: 4px 6px;
+    font-size: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    line-height: 1.2;
+}
+
+/* Insurance Box */
+.insurance-box {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1.5cm;
+    height: 0.8cm;
+    border: 1px solid #666;
+    font-size: 7px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+    z-index: 10;
+    padding: 1px;
+}
+.insurance-box span { 
+    font-weight: bold; 
+    font-size: 8px;
+    line-height: 1.1;
+}
+
+.to-section { 
+    margin-top: 3px; 
+    padding-right: 1.5cm; 
+    line-height: 1.25;
+}
+.to-section .label { 
+    font-weight: bold; 
+    font-size: 10px; 
+    margin-bottom: 1px; 
+}
+.to-section .value { 
+    font-size: 10px; 
+    display: block; 
+    margin-bottom: 0px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    max-width: 100%; 
+}
+
+.from-section { 
+    margin-top: auto; 
+    border-top: 1px solid #666; 
+    padding-top: 2px; 
+    line-height: 1.25;
+}
+.from-section .label { 
+    font-weight: bold; 
+    font-size: 10px; 
+    margin-bottom: 1px; 
+}
+.from-section .value { 
+    font-size: 10px; 
+    display: block; 
+    margin-bottom: 0px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    max-width: 100%; 
+}
+
+.label { font-weight: bold; font-size: 10px; margin-bottom: 1px; }
+.value { font-size: 10px; display: block; margin-bottom: 0px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+/* ========================================= */
+/* MOBILE VIEW */
+/* ========================================= */
 @media (max-width: 600px) {
+    body { padding: 10px; }
+    .app-container { padding: 15px; }
+    .app-header {
+        padding: 10px 15px;
+        margin: -10px -10px 15px -10px;
+    }
+    .app-logo {
+        width: 38px;
+        height: 38px;
+    }
+    .app-title {
+        font-size: 16px;
+    }
+    .install-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+    .box-grid-buttons { grid-template-columns: repeat(3, 1fr); gap: 5px; }
+    .box-btn { font-size: 12px; padding: 8px 2px; }
+    .box-btn small { font-size: 8px; }
+    .form-group label { font-size: 13px; }
+    .form-group input { font-size: 14px; padding: 7px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 16px; }
+    .modal-content { width: 92%; margin: 15% auto; padding: 15px; }
+    
+    /* Preview Mobile Adjust */
     .button-row {
         flex-direction: row;
         gap: 8px;
@@ -573,55 +579,11 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     }
 }
 
-/* Print madhe preview modal hide kara */
-@media print {
-    .preview-modal {
-        display: none !important;
-    }
-}
-/* ========================================= */
-/* ENTRY ACTIONS (Preview + Remove Buttons) */
-/* ========================================= */
-.entry-actions {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-}
-
-.entry-preview-btn {
-    width: auto;
-    padding: 4px 10px;
-    background-color: #6f42c1;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    font-weight: bold;
-    white-space: nowrap;
-}
-.entry-preview-btn:hover {
-    background-color: #5a32a3;
-}
-
-.entry-remove-btn {
-    width: auto;
-    padding: 4px 10px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    font-weight: bold;
-    white-space: nowrap;
-}
-.entry-remove-btn:hover {
-    background-color: #c82333;
-}
-
-/* Mobile madhe buttons stack kara */
 @media (max-width: 400px) {
+    .box-grid-buttons { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+    .box-btn { font-size: 11px; padding: 6px 2px; }
+    
+    /* Entry Buttons Stack */
     .entry-item {
         flex-direction: column;
         align-items: flex-start;
@@ -630,5 +592,41 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     .entry-actions {
         width: 100%;
         justify-content: flex-end;
+    }
+}
+
+/* ========================================= */
+/* PRINT SPECIFIC - BROWSER HEADER/FOOTER HIDE */
+/* ========================================= */
+@media print {
+    /* @page rule - Browser header/footer band kara */
+    @page {
+        margin: 0.5cm;
+        size: A4 portrait;
+    }
+    
+    /* Sagळं non-print hide kara */
+    .no-print { display: none !important; }
+    .app-header { display: none !important; }
+    .app-container { display: none !important; }
+    .modal { display: none !important; }
+    .preview-modal { display: none !important; }
+    .install-btn { display: none !important; }
+    
+    /* Body reset */
+    body { 
+        background: white; 
+        margin: 0; 
+        padding: 0; 
+    }
+    
+    /* A4 page print madhe disel */
+    .a4-page {
+        display: block !important; 
+        margin: 0;
+        padding: 0;
+        border: none;
+        width: 100%;
+        height: 100%;
     }
 }

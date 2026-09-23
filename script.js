@@ -1,5 +1,5 @@
 // ========================================= */
-// STICKMATE - SCRIPT.JS v3 (FINAL)
+// STICKMATE - SCRIPT.JS v3 (FINAL + AUTO UPDATE)
 // ========================================= */
 
 const a4Page = document.getElementById('a4Page');
@@ -230,7 +230,6 @@ function getFormData() {
     };
 }
 
-// ** UPDATED: Preview button Remove chya aadhi **
 function renderEntryList() {
     entryListDiv.innerHTML = '';
     entries.forEach((entry, index) => {
@@ -279,7 +278,6 @@ function createStickerBox(boxNumber, data) {
     box.style.left = pos.left + 'cm';
     box.style.top = pos.top + 'cm';
 
-    // FROM Address + Mobile ekत्र
     const shortAddress = data.fromAddress.length > 12 
         ? data.fromAddress.substring(0, 12) + '..' 
         : data.fromAddress;
@@ -336,9 +334,8 @@ function printAll() {
 // PREVIEW FUNCTIONALITY
 // ========================================= */
 let previewData = null;
-let previewBoxNumber = 1;  // Kontya box var print karaycha te save kara
+let previewBoxNumber = 1;
 
-// ** Form madhun Preview **
 function previewCurrentEntry() {
     const data = getFormData();
     
@@ -348,13 +345,12 @@ function previewCurrentEntry() {
     }
     
     previewData = data;
-    previewBoxNumber = 1; // Form madhun preview kelyavar Box 1 var print hoil
+    previewBoxNumber = 1;
     
     renderPreviewBox(data);
     document.getElementById('previewModal').style.display = 'block';
 }
 
-// ** Entry List madhun Preview (Specific Box) **
 function previewEntry(index) {
     if (index < 0 || index >= entries.length) {
         alert("Entry sapadli nahi!");
@@ -363,13 +359,12 @@ function previewEntry(index) {
     
     const data = entries[index];
     previewData = data;
-    previewBoxNumber = index + 1; // Tya entry cha box number var print hoil
+    previewBoxNumber = index + 1;
     
     renderPreviewBox(data);
     document.getElementById('previewModal').style.display = 'block';
 }
 
-// ** Preview Box Render **
 function renderPreviewBox(data) {
     const previewContainer = document.getElementById('previewBoxContainer');
     previewContainer.innerHTML = '';
@@ -414,24 +409,18 @@ function printPreview() {
         return;
     }
     
-    // Preview modal band kara
     document.getElementById('previewModal').style.display = 'none';
-    
-    // Data save kara
     saveAllFields();
     
-    // A4 page var box tayar kara (Specific box number var)
     a4Page.innerHTML = '';
     const box = createStickerBox(previewBoxNumber, previewData);
     a4Page.appendChild(box);
     
-    // Print kara
     setTimeout(() => {
         window.print();
     }, 200);
 }
 
-// Preview modal baher click kelyavar band kara
 window.addEventListener('click', (e) => {
     const previewModal = document.getElementById('previewModal');
     if (e.target === previewModal) {
@@ -439,7 +428,6 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// ESC key dabli tar preview band kara
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closePreviewModal();
@@ -447,11 +435,10 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ========================================= */
-// PWA INSTALL LOGIC (ENHANCED FOR MOBILE)
+// PWA INSTALL LOGIC
 // ========================================= */
 let deferredPrompt;
 
-// App already installed ahe ka check kara
 function isAppInstalled() {
     if (window.matchMedia('(display-mode: standalone)').matches) {
         return true;
@@ -462,7 +449,6 @@ function isAppInstalled() {
     return false;
 }
 
-// Install button dाखवा
 function showInstallButton() {
     const installBtn = document.getElementById('installBtn');
     if (installBtn && !isAppInstalled()) {
@@ -470,7 +456,6 @@ function showInstallButton() {
     }
 }
 
-// Install button hide kara
 function hideInstallButton() {
     const installBtn = document.getElementById('installBtn');
     if (installBtn) {
@@ -478,7 +463,6 @@ function hideInstallButton() {
     }
 }
 
-// beforeinstallprompt event - Chrome/Edge/Android
 window.addEventListener('beforeinstallprompt', (e) => {
     console.log('✅ beforeinstallprompt fired');
     e.preventDefault();
@@ -486,7 +470,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
     showInstallButton();
 });
 
-// iOS kinva manual install sathi instructions
 function showInstallInstructions() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
@@ -515,7 +498,6 @@ function showInstallInstructions() {
     alert(message);
 }
 
-// Install button click
 document.addEventListener('DOMContentLoaded', () => {
     const installBtn = document.getElementById('installBtn');
     if (installBtn) {
@@ -542,19 +524,139 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// App install zali tar button hide kara
 window.addEventListener('appinstalled', () => {
     console.log('✅ PWA installed successfully');
     hideInstallButton();
     deferredPrompt = null;
 });
 
-// ================== SERVICE WORKER REGISTER ==================
+// ========================================= */
+// FORCE UPDATE SYSTEM v3 - AUTO UPDATE CHECK
+// ========================================= */
+const APP_VERSION = 'v3'; // Update karta tar v4, v5 kara
+
+// ========================================= */
+// UPDATE POPUP DAKHAVNYACHA FUNCTION
+// ========================================= */
+function showUpdatePopup() {
+    // Jar popup already asel tar parat dाखवू naka
+    if (document.getElementById('updatePopup')) {
+        return;
+    }
+    
+    // Popup HTML tayar kara
+    const popup = document.createElement('div');
+    popup.id = 'updatePopup';
+    popup.className = 'update-popup';
+    popup.innerHTML = `
+        <div class="update-popup-content">
+            <div class="update-icon">🔄</div>
+            <h3>Navin Update Available!</h3>
+            <p>StickMate cha navin version tayar ahe. Ata update karaycha ka?</p>
+            <div class="update-buttons">
+                <button onclick="doUpdate()" class="update-btn-now">✅ Ata Update Kara</button>
+                <button onclick="closeUpdatePopup()" class="update-btn-later">⏰ Nantar</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Animation sathi
+    setTimeout(() => {
+        popup.classList.add('show');
+    }, 100);
+}
+
+function closeUpdatePopup() {
+    const popup = document.getElementById('updatePopup');
+    if (popup) {
+        popup.classList.remove('show');
+        setTimeout(() => {
+            popup.remove();
+        }, 300);
+    }
+}
+
+function doUpdate() {
+    // Sagle caches clear kara
+    if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    console.log('🗑️ Deleting cache:', cacheName);
+                    return caches.delete(cacheName);
+                })
+            );
+        }).then(() => {
+            // Service Worker unregister kara
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    return Promise.all(registrations.map(r => r.unregister()));
+                });
+            }
+        }).then(() => {
+            // Version update kara
+            localStorage.setItem('app_version', APP_VERSION);
+            // Page reload kara (cache bypass sathi)
+            window.location.reload(true);
+        });
+    } else {
+        window.location.reload(true);
+    }
+}
+
+// ========================================= */
+// VERSION CHECK (App ughadतana)
+// ========================================= */
+function checkVersion() {
+    const savedVersion = localStorage.getItem('app_version');
+    console.log('📱 Saved Version:', savedVersion, '| Current Version:', APP_VERSION);
+    
+    // Jar saved version nasel (pratham veli) tar current version save kara
+    if (savedVersion === null) {
+        localStorage.setItem('app_version', APP_VERSION);
+        console.log('✅ Pratham veli - Version saved:', APP_VERSION);
+        return false;
+    }
+    
+    // Jar version vegla asel tar update popup dाखवा
+    if (savedVersion !== APP_VERSION) {
+        console.log('🔄 Version mismatch! Update available!');
+        showUpdatePopup();
+        return true;
+    }
+    
+    console.log('✅ Version match - kाही update nahi');
+    return false;
+}
+
+// ========================================= */
+// SERVICE WORKER + UPDATE CHECK
+// ========================================= */
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
             .then(registration => {
                 console.log('✅ ServiceWorker registered:', registration.scope);
+                
+                // Pratyek 30 seconds la update check kara
+                setInterval(() => {
+                    registration.update();
+                }, 30000);
+                
+                // Jar navin service worker sapadla tar
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    console.log('🔄 New Service Worker found!');
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('✅ New version available!');
+                            showUpdatePopup();
+                        }
+                    });
+                });
             })
             .catch(error => {
                 console.log('❌ ServiceWorker registration failed:', error);
@@ -562,7 +664,22 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// ================== INITIALIZE ==================
+// ========================================= */
+// AUTO UPDATE CHECK (App ughadतana)
+// ========================================= */
+document.addEventListener('DOMContentLoaded', () => {
+    // Version check kara
+    checkVersion();
+    
+    // Har 60 seconds la version check kara
+    setInterval(() => {
+        checkVersion();
+    }, 60000);
+});
+
+// ========================================= */
+// INITIALIZE
+// ========================================= */
 window.onload = () => {
     renderEntryList();
     generateBoxButtons();

@@ -1,8 +1,8 @@
 // ========================================= */
-// STICKMATE SERVICE WORKER - v2
+// STICKMATE SERVICE WORKER - v3
 // ========================================= */
 
-const CACHE_NAME = 'stickmate-v2';
+const CACHE_NAME = 'stickmate-v3';
 
 const urlsToCache = [
     './',
@@ -16,12 +16,10 @@ const urlsToCache = [
 ];
 
 // ========================================= */
-// INSTALL EVENT - Cache sagle files
+// INSTALL EVENT
 // ========================================= */
 self.addEventListener('install', event => {
-    console.log('🔧 Service Worker installing... v2');
-    
-    // Turant activate kara (waiting skip)
+    console.log('🔧 Service Worker installing... v3');
     self.skipWaiting();
     
     event.waitUntil(
@@ -37,40 +35,29 @@ self.addEventListener('install', event => {
 });
 
 // ========================================= */
-// FETCH EVENT - Cache madhun serve kara
+// FETCH EVENT - Network First, Cache Fallback
 // ========================================= */
 self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then(response => {
-                // Cache madhe asel tar return kara
-                if (response) {
-                    return response;
-                }
-                // Nasel tar network madhun ghe
-                return fetch(event.request).then(networkResponse => {
-                    // Jar valid response asel tar cache madhe save kara
-                    if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-                        const responseToCache = networkResponse.clone();
-                        caches.open(CACHE_NAME).then(cache => {
-                            cache.put(event.request, responseToCache);
-                        });
-                    }
-                    return networkResponse;
+                const responseToCache = response.clone();
+                caches.open(CACHE_NAME).then(cache => {
+                    cache.put(event.request, responseToCache);
                 });
+                return response;
             })
             .catch(() => {
-                // Offline asel tar index.html dाखवा
-                return caches.match('./index.html');
+                return caches.match(event.request);
             })
     );
 });
 
 // ========================================= */
-// ACTIVATE EVENT - Juno cache clear kara
+// ACTIVATE EVENT
 // ========================================= */
 self.addEventListener('activate', event => {
-    console.log('🚀 Service Worker activating... v2');
+    console.log('🚀 Service Worker activating... v3');
     
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -84,17 +71,16 @@ self.addEventListener('activate', event => {
             );
         }).then(() => {
             console.log('✅ Old caches cleared');
-            // Turant sagle clients control kara
             return self.clients.claim();
         })
     );
 });
 
 // ========================================= */
-// MESSAGE EVENT - Force update sathi
+// MESSAGE EVENT
 // ========================================= */
 self.addEventListener('message', event => {
-    if (event.data === 'SKIP_WAITING') {
+    if (event.data && event.data.action === 'SKIP_WAITING') {
         self.skipWaiting();
     }
     
@@ -103,9 +89,9 @@ self.addEventListener('message', event => {
             cacheNames.forEach(cacheName => {
                 caches.delete(cacheName);
             });
-            console.log('🗑️ All caches cleared by message');
+            console.log('🗑️ All caches cleared');
         });
     }
 });
 
-console.log('📦 StickMate Service Worker loaded - v2');
+console.log('📦 StickMate Service Worker loaded - v3');
