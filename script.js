@@ -68,7 +68,7 @@ function deleteContact(type, index) {
     const contacts = getContacts(type);
     const contactName = contacts[index].name;
     
-    if (!confirm(`Tumhala "${contactName}" cha contact delete karaycha ahe ka?`)) {
+    if (!confirm(`तुम्हाला "${contactName}" हा contact डिलीट करायचा आहे का?`)) {
         return;
     }
     
@@ -353,7 +353,7 @@ function previewCurrentEntry() {
 
 function previewEntry(index) {
     if (index < 0 || index >= entries.length) {
-        alert("Entry sapadli nahi!");
+        alert("Entry सापडली नाही!");
         return;
     }
     
@@ -405,7 +405,7 @@ function closePreviewModal() {
 
 function printPreview() {
     if (!previewData) {
-        alert("Kाही data nahi ahe!");
+        alert("काही data नाही आहे!");
         return;
     }
     
