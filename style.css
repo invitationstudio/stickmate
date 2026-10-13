@@ -384,21 +384,23 @@ h3 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 .button-row .add-btn {
-    flex: 1;
+    flex: 1; /* Left la thoda lahan */
+    padding: 12px 16px;
+    font-size: 14px;
 }
 
 .preview-btn {
     width: auto;
-    padding: 12px 24px;
+    padding: 12px 20px;
     background: linear-gradient(135deg, #6f42c1, #5a32a3);
     color: white;
     border: none;
     border-radius: 12px;
-    font-size: 15px;
+    font-size: 14px;
     cursor: pointer;
     font-weight: 700;
     display: inline-block;
@@ -407,6 +409,7 @@ h3 {
     box-shadow: 
         0 6px 20px rgba(111,66,193,0.4),
         inset 0 1px 0 rgba(255,255,255,0.2);
+    flex: 1; /* Centre la */
 }
 
 .preview-btn:hover {
@@ -417,6 +420,36 @@ h3 {
 }
 
 .preview-btn:active {
+    transform: translateY(-1px);
+}
+
+.generate-btn {
+    width: auto;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 700;
+    display: inline-block;
+    white-space: nowrap;
+    transition: var(--transition);
+    box-shadow: 
+        0 6px 20px rgba(255,107,53,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+    flex: 1; /* Right la */
+}
+
+.generate-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 10px 30px rgba(255,107,53,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.generate-btn:active {
     transform: translateY(-1px);
 }
 
@@ -473,8 +506,6 @@ hr {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    max-height: 400px;
-    overflow-y: auto;
     padding: 12px;
     border: 1px solid #e0e0e0;
     border-radius: 16px;
@@ -1120,7 +1151,7 @@ hr {
 
 .insurance-box span {
     font-weight: bold;
-    font-size: 8px;
+    font-size: 10px; /* 8px varun 10px kela */
     line-height: 1.1;
 }
 
@@ -1210,6 +1241,16 @@ hr {
     .install-btn {
         padding: 8px 14px;
         font-size: 11px;
+    }
+    
+    .settings-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 17px;
+    }
+    
+    .header-buttons {
+        gap: 6px;
     }
     
     .app-container {
@@ -1342,7 +1383,7 @@ hr {
 /* ========================================= */
 @media print {
     @page {
-        margin: 0.5cm;
+        margin: 0.3cm;
         size: A4 portrait;
     }
     
@@ -1405,4 +1446,194 @@ hr {
 ::-moz-selection {
     background: linear-gradient(135deg, #007bff, #6f42c1);
     color: white;
+}
+
+/* ========================================= */
+/* DROPDOWN CONTAINER STYLING                */
+/* ========================================= */
+.dropdown-container {
+    margin-top: 12px;
+    width: 100%;
+}
+
+.dropdown-container select {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #fafafa;
+    color: #1a1a2e;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007bff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 18px;
+}
+
+.dropdown-container select:focus {
+    border-color: var(--primary);
+    background-color: white;
+    box-shadow: 
+        0 0 0 4px rgba(0,123,255,0.1),
+        0 4px 12px rgba(0,123,255,0.15);
+    transform: translateY(-2px);
+}
+
+.dropdown-container select:hover {
+    border-color: var(--primary-light);
+}
+/* ========================================= */
+/* STICKER SIZE DROPDOWN STYLING              */
+/* ========================================= */
+#stickerSizeDropdown {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #fafafa;
+    color: #1a1a2e;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007bff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 18px;
+}
+
+#stickerSizeDropdown:focus {
+    border-color: var(--primary);
+    background-color: white;
+    box-shadow: 
+        0 0 0 4px rgba(0,123,255,0.1),
+        0 4px 12px rgba(0,123,255,0.15);
+    transform: translateY(-2px);
+}
+
+#stickerSizeDropdown:hover {
+    border-color: var(--primary-light);
+}
+/* ========================================= */
+/* SETTINGS BUTTON IN HEADER                 */
+/* ========================================= */
+.header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.settings-btn:hover {
+    background: rgba(255,255,255,0.35);
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* ========================================= */
+/* SETTINGS MODAL                            */
+/* ========================================= */
+.settings-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.settings-section h4 {
+    color: #1a1a2e;
+    font-size: 15px;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.settings-note {
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.settings-action-btn {
+    width: 100%;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    display: block;
+    text-align: center;
+    margin-bottom: 10px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.backup-btn {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+}
+
+.backup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,123,255,0.5);
+}
+
+.restore-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+    cursor: pointer;
+}
+
+.restore-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40,167,69,0.5);
+}
+
+.danger-btn {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    box-shadow: 0 4px 15px rgba(220,53,69,0.3);
+}
+
+.danger-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220,53,69,0.5);
 }

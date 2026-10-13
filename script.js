@@ -7,12 +7,89 @@ const entryListDiv = document.getElementById('entryList');
 const boxButtonsContainer = document.getElementById('boxButtonsContainer');
 let entries = [];
 
-const COLS = 3;
-const ROWS = 7;
-const BOX_W = 6;
-const BOX_H = 3.5;
-const TOTAL_BOXES = COLS * ROWS;
+// Default values
+let COLS = 3;
+let ROWS = 7;
+let BOX_W = 6;
+let BOX_H = 3.5;
+let TOTAL_BOXES = COLS * ROWS;
 
+// A4 Page dimensions (cm)
+const PAGE_W = 21;
+const PAGE_H = 29.7;
+const MARGIN = 0.5; // Page margin in cm
+
+// Function to calculate grid based on sticker size
+function calculateGrid(boxW, boxH) {
+    const availableW = PAGE_W - (MARGIN * 2);
+    const availableH = PAGE_H - (MARGIN * 2);
+    
+    COLS = Math.floor(availableW / boxW);
+    ROWS = Math.floor(availableH / boxH);
+    TOTAL_BOXES = COLS * ROWS;
+    BOX_W = boxW;
+    BOX_H = boxH;
+    
+    console.log(`📐 Default Size: ${boxW}x${boxH}cm | Grid: ${COLS}x${ROWS} | Total: ${TOTAL_BOXES}`);
+}
+
+// Function to change sticker size
+function changeStickerSize(sizeValue) {
+    const [w, h] = sizeValue.split('x').map(Number);
+    calculateGrid(w, h);
+    
+    updateStickerBoxCSS(w, h);
+    generateBoxButtons();
+    updateDropdownOptions();
+    
+    // Entries delete kadhun takle ahet - Mix size allowed ahe!
+    // Fakt message dakhva
+    
+    alert(`✅ Size set: ${w}cm × ${h}cm\n📄 Ya size sathi page madhe ${TOTAL_BOXES} stickers adjust hotil (${COLS} columns × ${ROWS} rows)\n\n💡 Note: Existing entries delete honar nahit. Pratyek entry tya velchi size save karte.`);
+}
+
+// Update sticker box CSS dynamically
+function updateStickerBoxCSS(w, h) {
+    // Ha fakt default size set karto, actual size createStickerBox madhe inline style ne yeto
+    let styleEl = document.getElementById('dynamicStickerStyle');
+    if (styleEl) styleEl.remove();
+    
+    styleEl = document.createElement('style');
+    styleEl.id = 'dynamicStickerStyle';
+    styleEl.innerHTML = `
+        .sticker-box {
+            width: ${w - 0.6}cm;
+            height: ${h - 0.6}cm;
+        }
+    `;
+    document.head.appendChild(styleEl);
+}
+
+// Update dropdown options dynamically
+function updateDropdownOptions() {
+    const dropdown = document.getElementById('quickPrintDropdown');
+    if (!dropdown) return;
+    
+    dropdown.innerHTML = '<option value="">-- Select Box --</option>';
+    
+    const positions = [];
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const rowName = r === 0 ? 'Top' : `R${r + 1}`;
+            const colName = c === 0 ? 'Left' : (c === 1 ? 'Center' : 'Right');
+            positions.push(`${rowName}-${colName}`);
+        }
+    }
+    
+    // Ata dropdown madhe 1 te TOTAL_BOXES paryant options dakhva
+    // Pan fakt 1-3 buttons ahet, tar dropdown madhe 4 te TOTAL_BOXES dakhva
+    for (let i = 4; i <= TOTAL_BOXES; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Box ${i} (${positions[i - 1]})`;
+        dropdown.appendChild(opt);
+    }
+}
 // ================== LOCAL STORAGE ==================
 const fieldKeys = ['toName', 'toAddress', 'toMobile', 'fromName', 'fromAddress', 'fromMobile'];
 let currentContactType = '';
@@ -68,7 +145,7 @@ function deleteContact(type, index) {
     const contacts = getContacts(type);
     const contactName = contacts[index].name;
     
-    if (!confirm(`तुम्हाला "${contactName}" हा Contact डिलीट करायचा आहे का?`)) {
+    if (!confirm(`तुम्हाला "${contactName}" हा contact डिलीट करायचा आहे का?`)) {
         return;
     }
     
@@ -183,19 +260,155 @@ window.onclick = function(event) {
     if (event.target === contactsModal) closeContactsModal();
 }
 
+// ========================================= */
+// SETTINGS - BACKUP & RESTORE
+// ========================================= */
+
+function openSettingsModal() {
+    document.getElementById('settingsModal').style.display = 'block';
+}
+
+function closeSettingsModal() {
+    document.getElementById('settingsModal').style.display = 'none';
+}
+
+// Backup Contacts - Download JSON file
+function backupContacts() {
+    const backupData = {
+        version: 'v3',
+        backupDate: new Date().toISOString(),
+        contacts_to: getContacts('to'),
+        contacts_from: getContacts('from'),
+        saved_fields: {}
+    };
+    
+    // Sagle saved fields pan backup kara
+    fieldKeys.forEach(key => {
+        backupData.saved_fields[key] = getSavedData(key);
+    });
+    
+    // JSON file download kara
+    const dataStr = JSON.stringify(backupData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `stickmate_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    alert("✅ Backup download zala!\n\nFile tumchya Downloads folder madhe save zali ahe.");
+}
+
+// Restore Contacts - Upload JSON file
+function restoreContacts(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const backupData = JSON.parse(e.target.result);
+            
+            // Validate backup file
+            if (!backupData.contacts_to && !backupData.contacts_from) {
+                alert("❌ Chukicha file! Ha StickMate cha backup file nahi ahe.");
+                return;
+            }
+            
+            if (!confirm("⚠️ Restore kelyavar existing contacts replace hotil. Thik ahe ka?")) {
+                event.target.value = '';
+                return;
+            }
+            
+            // Contacts restore kara
+            if (backupData.contacts_to) {
+                localStorage.setItem('contacts_to', JSON.stringify(backupData.contacts_to));
+            }
+            if (backupData.contacts_from) {
+                localStorage.setItem('contacts_from', JSON.stringify(backupData.contacts_from));
+            }
+            
+            // Saved fields pan restore kara
+            if (backupData.saved_fields) {
+                fieldKeys.forEach(key => {
+                    if (backupData.saved_fields[key]) {
+                        localStorage.setItem('saved_' + key, JSON.stringify(backupData.saved_fields[key]));
+                    }
+                });
+            }
+            
+            const toCount = backupData.contacts_to ? backupData.contacts_to.length : 0;
+            const fromCount = backupData.contacts_from ? backupData.contacts_from.length : 0;
+            
+            alert(`✅ Restore zala!\n\n📱 TO Contacts: ${toCount}\n📱 FROM Contacts: ${fromCount}`);
+            
+            // File input reset kara
+            event.target.value = '';
+            
+            // Modal band kara
+            closeSettingsModal();
+            
+        } catch (error) {
+            console.error('Restore error:', error);
+            alert("❌ File read karta aali nahi. Thik file select kara.");
+            event.target.value = '';
+        }
+    };
+    
+    reader.readAsText(file);
+}
+
+// Clear All Contacts
+function clearAllContacts() {
+    if (!confirm("⚠️ Sagle saved contacts delete hotil. Ha parat parat yeu shakat nahi. Thik ahe ka?")) {
+        return;
+    }
+    
+    if (!confirm("🔴 LAST WARNING: Sagle contacts delete hoil. Confirm kara?")) {
+        return;
+    }
+    
+    localStorage.removeItem('contacts_to');
+    localStorage.removeItem('contacts_from');
+    
+    // Saved fields pan clear kara
+    fieldKeys.forEach(key => {
+        localStorage.removeItem('saved_' + key);
+    });
+    
+    alert("✅ Sagle contacts delete zale.");
+    closeSettingsModal();
+}
+
+// Settings Modal bahar click kelyavar band kara
+window.addEventListener('click', (event) => {
+    const settingsModal = document.getElementById('settingsModal');
+    if (event.target === settingsModal) {
+        closeSettingsModal();
+    }
+});
+
 // ================== BOX BUTTONS ==================
 function generateBoxButtons() {
     boxButtonsContainer.innerHTML = '';
-    const positions = [
-        "Top-Left", "Top-Center", "Top-Right",
-        "R2-Left", "R2-Center", "R2-Right",
-        "R3-Left", "R3-Center", "R3-Right",
-        "R4-Left", "R4-Center", "R4-Right",
-        "R5-Left", "R5-Center", "R5-Right",
-        "R6-Left", "R6-Center", "R6-Right",
-        "R7-Left", "R7-Center", "R7-Right"
-    ];
-    for (let i = 1; i <= TOTAL_BOXES; i++) {
+    
+    const positions = [];
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const rowName = r === 0 ? 'Top' : `R${r + 1}`;
+            const colName = c === 0 ? 'Left' : (c === 1 ? 'Center' : 'Right');
+            positions.push(`${rowName}-${colName}`);
+        }
+    }
+    
+    // Fakt 3 buttons dakhva (1, 2, 3)
+    const maxButtons = Math.min(3, TOTAL_BOXES);
+    for (let i = 1; i <= maxButtons; i++) {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'box-btn';
@@ -205,13 +418,24 @@ function generateBoxButtons() {
     }
 }
 
+// Dropdown madhun box select kelyavar print kara
+function printSelectedBox(boxNumber) {
+    if (!boxNumber) return;
+    printSingleBox(parseInt(boxNumber));
+    // Print zalyavar dropdown reset kara
+    document.getElementById('quickPrintDropdown').value = '';
+}
+
 // ================== ENTRY LOGIC ==================
 function addEntry() {
-    if (entries.length >= TOTAL_BOXES) {
-        alert(`Maximum ${TOTAL_BOXES} entries allowed ahet.`);
-        return;
-    }
+    // Ata maximum limit nahi ahe, karan mix size ahet
     const data = getFormData();
+    
+    // Tya velchi size entry madhe save kara
+    data.sizeW = BOX_W;
+    data.sizeH = BOX_H;
+    data.sizeLabel = `${BOX_W}x${BOX_H}`;
+    
     saveAllFields();
     entries.push(data);
     renderEntryList();
@@ -226,7 +450,10 @@ function getFormData() {
         fromName: document.getElementById('fromName').value || "N/A",
         fromAddress: document.getElementById('fromAddress').value || "N/A",
         fromMobile: document.getElementById('fromMobile').value || "N/A",
-        insurance: document.getElementById('insuranceAmount').value || "0"
+        insurance: document.getElementById('insuranceAmount').value || "0",
+        sizeW: BOX_W,
+        sizeH: BOX_H,
+        sizeLabel: `${BOX_W}x${BOX_H}`
     };
 }
 
@@ -235,8 +462,9 @@ function renderEntryList() {
     entries.forEach((entry, index) => {
         const div = document.createElement('div');
         div.className = 'entry-item';
+        const sizeLabel = entry.sizeLabel || `${BOX_W}x${BOX_H}`;
         div.innerHTML = `
-            <span><b>Box ${index + 1}:</b> ${entry.toName} (${entry.toMobile})</span>
+            <span><b>#${index + 1}:</b> ${entry.toName} (${entry.toMobile}) <small style="color:#888;">[${sizeLabel}cm]</small></span>
             <div class="entry-actions">
                 <button class="entry-preview-btn" onclick="previewEntry(${index})">👁️ Preview</button>
                 <button class="entry-remove-btn" onclick="removeEntry(${index})">Remove</button>
@@ -258,7 +486,7 @@ function clearForm() {
     document.getElementById('fromName').value = '';
     document.getElementById('fromAddress').value = '';
     document.getElementById('fromMobile').value = '';
-    document.getElementById('insuranceAmount').value = '500';
+    document.getElementById('insuranceAmount').value = '';
     document.getElementById('toName').focus();
 }
 
@@ -271,12 +499,20 @@ function getPosition(boxNumber) {
 }
 
 // ================== CREATE STICKER BOX ==================
-function createStickerBox(boxNumber, data) {
-    const pos = getPosition(boxNumber);
+function createStickerBox(boxNumber, data, customPos = null, customSize = null) {
+    // Jar custom position dileli asel tar ti vapra, nahitar getPosition vapra
+    const pos = customPos || getPosition(boxNumber);
+    
+    // Jar custom size dileli asel tar ti vapra, nahitar data madhli size vapra
+    const w = customSize ? customSize.w : (data.sizeW || BOX_W);
+    const h = customSize ? customSize.h : (data.sizeH || BOX_H);
+    
     const box = document.createElement('div');
     box.className = 'sticker-box';
     box.style.left = pos.left + 'cm';
     box.style.top = pos.top + 'cm';
+    box.style.width = (w - 0.6) + 'cm';  // Border aani padding sathi 0.6cm kami
+    box.style.height = (h - 0.6) + 'cm';
 
     const shortAddress = data.fromAddress.length > 12 
         ? data.fromAddress.substring(0, 12) + '..' 
@@ -285,8 +521,6 @@ function createStickerBox(boxNumber, data) {
 
     box.innerHTML = `
         <div class="insurance-box">
-            <span>INSURANCE</span>
-            <span>₹${data.insurance}</span>
         </div>
         <div class="to-section">
             <div class="label">TO,</div>
@@ -310,12 +544,18 @@ function printSingleBox(boxNumber) {
         return;
     }
     saveAllFields();
+    
+    // Data madhe current size save kara
+    data.sizeW = BOX_W;
+    data.sizeH = BOX_H;
+    data.sizeLabel = `${BOX_W}x${BOX_H}`;
+    
     a4Page.innerHTML = '';
-    const box = createStickerBox(boxNumber, data);
+    const pos = getPosition(boxNumber);
+    const box = createStickerBox(boxNumber, data, pos, { w: BOX_W, h: BOX_H });
     a4Page.appendChild(box);
     window.print();
 }
-
 function printAll() {
     if (entries.length === 0) {
         alert("कृपया आधी Entry Add करा!");
@@ -323,10 +563,39 @@ function printAll() {
     }
     saveAllFields();
     a4Page.innerHTML = '';
-    entries.forEach((data, index) => {
-        const box = createStickerBox(index + 1, data);
+    
+    // Mix size sathi dynamic positioning
+    // Pratyek entry cha size vaprun page var yogy position madhe basva
+    let currentX = MARGIN;
+    let currentY = MARGIN;
+    let rowHeight = 0;
+    
+    entries.forEach((data) => {
+        const w = data.sizeW || BOX_W;
+        const h = data.sizeH || BOX_H;
+        
+        // Jar current row madhe jaga nasel tar next row la ja
+        if (currentX + w > PAGE_W - MARGIN) {
+            currentX = MARGIN;
+            currentY += rowHeight;
+            rowHeight = 0;
+        }
+        
+        // Jar page khali sampat asel tar nava page (kinva warning)
+        if (currentY + h > PAGE_H - MARGIN) {
+            // Ata fakt ekach page ahe, tar ithe thambva
+            // (Future madhe multiple pages sathi)
+            console.warn("Page full! Kahi stickers adjust zale nahit.");
+            return;
+        }
+        
+        const box = createStickerBox(0, data, { left: currentX, top: currentY }, { w, h });
         a4Page.appendChild(box);
+        
+        currentX += w;
+        if (h > rowHeight) rowHeight = h;
     });
+    
     window.print();
 }
 
@@ -351,6 +620,30 @@ function previewCurrentEntry() {
     document.getElementById('previewModal').style.display = 'block';
 }
 
+// ========================================= */
+// GENERATE ALL 21 STICKERS AUTO
+// ========================================= */
+function generateAllStickers() {
+    const data = getFormData();
+    
+    if (data.toName === "N/A" && data.toAddress === "N/A" && data.toMobile === "N/A") {
+        alert("कृपया आधी TO आणि FROM details भरा!");
+        return;
+    }
+    
+    // Ata fakt 1 entry add kara (current size sobat)
+    // User ne swata add karavet
+    data.sizeW = BOX_W;
+    data.sizeH = BOX_H;
+    data.sizeLabel = `${BOX_W}x${BOX_H}`;
+    
+    entries.push(data);
+    renderEntryList();
+    saveAllFields();
+    
+    alert(`✅ 1 sticker add zala (${BOX_W}x${BOX_H}cm).\n\n💡 Ata tumhi size change karun ajun entries add karu shakta.`);
+}
+
 function previewEntry(index) {
     if (index < 0 || index >= entries.length) {
         alert("Entry सापडली नाही!");
@@ -372,6 +665,15 @@ function renderPreviewBox(data) {
     const tempBox = document.createElement('div');
     tempBox.className = 'sticker-box';
     
+    // Size dynamic kara
+    const w = data.sizeW || BOX_W;
+    const h = data.sizeH || BOX_H;
+    tempBox.style.width = (w - 0.6) + 'cm';
+    tempBox.style.height = (h - 0.6) + 'cm';
+    tempBox.style.position = 'relative';
+    tempBox.style.left = '0';
+    tempBox.style.top = '0';
+    
     const shortAddress = data.fromAddress.length > 12 
         ? data.fromAddress.substring(0, 12) + '..' 
         : data.fromAddress;
@@ -379,8 +681,6 @@ function renderPreviewBox(data) {
     
     tempBox.innerHTML = `
         <div class="insurance-box">
-            <span>INSURANCE</span>
-            <span>₹${data.insurance}</span>
         </div>
         <div class="to-section">
             <div class="label">TO,</div>
@@ -413,7 +713,12 @@ function printPreview() {
     saveAllFields();
     
     a4Page.innerHTML = '';
-    const box = createStickerBox(previewBoxNumber, previewData);
+    
+    // Preview data madhli size vapra
+    const w = previewData.sizeW || BOX_W;
+    const h = previewData.sizeH || BOX_H;
+    
+    const box = createStickerBox(previewBoxNumber, previewData, { left: MARGIN, top: MARGIN }, { w, h });
     a4Page.appendChild(box);
     
     setTimeout(() => {
@@ -431,6 +736,7 @@ window.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closePreviewModal();
+        closeSettingsModal();
     }
 });
 
@@ -695,6 +1001,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // INITIALIZE
 // ========================================= */
 window.onload = () => {
+    // Initial grid calculation
+    calculateGrid(6, 3.5);
+    updateStickerBoxCSS(6, 3.5);
+    updateDropdownOptions();
+    
     renderEntryList();
     generateBoxButtons();
     

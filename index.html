@@ -46,12 +46,15 @@
 <body>
 
     <!-- ================== HEADER WITH LOGO ================== -->
-    <header class="app-header no-print">
+        <header class="app-header no-print">
         <div class="header-content">
             <img src="logo-v2.png" alt="StickMate Logo" class="app-logo" onerror="this.style.display='none'">
             <h1 class="app-title">StickMate</h1>
         </div>
-        <button id="installBtn" class="install-btn" style="display: none;">📲 Install App</button>
+        <div class="header-buttons">
+            <button id="settingsBtn" class="settings-btn" onclick="openSettingsModal()">⚙️</button>
+            <button id="installBtn" class="install-btn" style="display: none;">📲 Install App</button>
+        </div>
     </header>
 
     <div class="app-container no-print">
@@ -95,17 +98,55 @@
 
         <div class="form-group">
             <label>Insurance Amount (₹):</label>
-            <input type="text" id="insuranceAmount" placeholder="e.g. 500" value="500">
+            <input type="text" id="insuranceAmount" placeholder="e.g. " value="">
         </div>
 
-        <div class="form-group button-row">
-            <button onclick="addEntry()" class="add-btn">➕ Add to List</button>
+                <div class="form-group button-row">
+            <button onclick="addEntry()" class="add-btn">➕ Add</button>
             <button onclick="previewCurrentEntry()" class="preview-btn">👁️ Preview</button>
+            <button onclick="generateAllStickers()" class="generate-btn">🚀 Generate All</button>
+        </div>
+
+                        <!-- Sticker Size Selection -->
+        <div class="form-group">
+            <label>📐 Sticker Size (Select):</label>
+            <div class="dropdown-container">
+                <select id="stickerSizeDropdown" onchange="changeStickerSize(this.value)">
+                    <option value="6x3.5">6 cm × 3.5 cm (Default - 21 Stickers)</option>
+                    <option value="7x4">7 cm × 4 cm</option>
+                    <option value="8x4.5">8 cm × 4.5 cm</option>
+                </select>
+            </div>
         </div>
 
         <div class="form-group">
             <label>Quick Print (Select Box Position):</label>
             <div class="box-grid-buttons" id="boxButtonsContainer"></div>
+            
+            <!-- Nava Dropdown 2 number box chya khali -->
+            <div class="dropdown-container">
+                <select id="quickPrintDropdown" onchange="printSelectedBox(this.value)">
+                    <option value="">-- Select Box (4 to 21) --</option>
+                    <option value="4">Box 4 (R2-Left)</option>
+                    <option value="5">Box 5 (R2-Center)</option>
+                    <option value="6">Box 6 (R2-Right)</option>
+                    <option value="7">Box 7 (R3-Left)</option>
+                    <option value="8">Box 8 (R3-Center)</option>
+                    <option value="9">Box 9 (R3-Right)</option>
+                    <option value="10">Box 10 (R4-Left)</option>
+                    <option value="11">Box 11 (R4-Center)</option>
+                    <option value="12">Box 12 (R4-Right)</option>
+                    <option value="13">Box 13 (R5-Left)</option>
+                    <option value="14">Box 14 (R5-Center)</option>
+                    <option value="15">Box 15 (R5-Right)</option>
+                    <option value="16">Box 16 (R6-Left)</option>
+                    <option value="17">Box 17 (R6-Center)</option>
+                    <option value="18">Box 18 (R6-Right)</option>
+                    <option value="19">Box 19 (R7-Left)</option>
+                    <option value="20">Box 20 (R7-Center)</option>
+                    <option value="21">Box 21 (R7-Right)</option>
+                </select>
+            </div>
         </div>
 
         <hr>
@@ -129,6 +170,7 @@
     </div>
 
     <!-- Contacts Modal -->
+        <!-- Contacts Modal -->
     <div id="contactsModal" class="modal no-print">
         <div class="modal-content">
             <span class="close" onclick="closeContactsModal()">&times;</span>
@@ -137,6 +179,37 @@
             <div id="contactsList" class="modal-list"></div>
             <div class="contacts-actions">
                 <button onclick="saveCurrentContact()" id="saveContactBtn" style="background-color: #28a745;">💾 Save Current Form as Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal no-print">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettingsModal()">&times;</span>
+            <h3>⚙️ Settings</h3>
+            
+            <div class="settings-section">
+                <h4>💾 Backup & Restore</h4>
+                <p class="settings-note">Tumche saved contacts (TO aani FROM) ek file madhe save kara aani nantar parat restore kara.</p>
+                
+                <button onclick="backupContacts()" class="settings-action-btn backup-btn">📥 Backup Contacts (Download)</button>
+                
+                <label for="restoreFileInput" class="settings-action-btn restore-btn">
+                    📤 Restore Contacts (Upload)
+                </label>
+                <input type="file" id="restoreFileInput" accept=".json" onchange="restoreContacts(event)" style="display: none;">
+            </div>
+            
+            <div class="settings-section">
+                <h4>🗑️ Danger Zone</h4>
+                <p class="settings-note">Sagle saved contacts delete kara. Ha parat parat yeu shakat nahi.</p>
+                <button onclick="clearAllContacts()" class="settings-action-btn danger-btn">🗑️ Clear All Contacts</button>
+            </div>
+            
+            <div class="settings-section">
+                <h4>ℹ️ App Info</h4>
+                <p class="settings-note">Version: v3<br>StickMate - Your Parcel's Best Mate</p>
             </div>
         </div>
     </div>
