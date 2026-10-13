@@ -626,22 +626,36 @@ function previewCurrentEntry() {
 function generateAllStickers() {
     const data = getFormData();
     
+    // Check kara ki TO details bharle ahet ka
     if (data.toName === "N/A" && data.toAddress === "N/A" && data.toMobile === "N/A") {
         alert("कृपया आधी TO आणि FROM details भरा!");
         return;
     }
     
-    // Ata fakt 1 entry add kara (current size sobat)
-    // User ne swata add karavet
-    data.sizeW = BOX_W;
-    data.sizeH = BOX_H;
-    data.sizeLabel = `${BOX_W}x${BOX_H}`;
+    // Current size nusar kiti stickers page var basu shaktat te calculate kara
+    const availableW = PAGE_W - (MARGIN * 2);
+    const availableH = PAGE_H - (MARGIN * 2);
+    const cols = Math.floor(availableW / BOX_W);
+    const rows = Math.floor(availableH / BOX_H);
+    const totalStickers = cols * rows;
     
-    entries.push(data);
+    // Entries clear kara aani sagle stickers auto-generate kara
+    entries = [];
+    for (let i = 0; i < totalStickers; i++) {
+        const stickerData = { ...data }; // Copy data
+        stickerData.sizeW = BOX_W;
+        stickerData.sizeH = BOX_H;
+        stickerData.sizeLabel = `${BOX_W}x${BOX_H}`;
+        entries.push(stickerData);
+    }
+    
     renderEntryList();
     saveAllFields();
     
-    alert(`✅ 1 sticker add zala (${BOX_W}x${BOX_H}cm).\n\n💡 Ata tumhi size change karun ajun entries add karu shakta.`);
+    alert(`✅ ${totalStickers} stickers auto-generate zale! (${cols} columns × ${rows} rows)\nAta print kara.`);
+    
+    // Direct print kara
+    printAll();
 }
 
 function previewEntry(index) {
