@@ -1,5 +1,5 @@
 // ========================================= */
-// STICKMATE - SCRIPT.JS v3 (FINAL + AUTO UPDATE + ENTER NAVIGATION)
+// STICKMATE - SCRIPT.JS v3 (FINAL + AUTO UPDATE + ENTER NAVIGATION + FOLDER MEMORY)
 // ========================================= */
 
 const a4Page = document.getElementById('a4Page');
@@ -19,7 +19,86 @@ const PAGE_W = 21;
 const PAGE_H = 29.7;
 const MARGIN = 0.5; // Page margin in cm
 
-// Function to calculate grid based on sticker size
+// ========================================= */
+// INDEXEDDB - FOLDER HANDLE SAVE KARNYASATHI
+// ========================================= */
+const DB_NAME = 'StickMateDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'folderHandles';
+
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME);
+            }
+        };
+        
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onerror = (event) => reject(event.target.error);
+    });
+}
+
+async function saveFolderHandle(handle) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.put(handle, 'backupFolder');
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function getFolderHandle() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.get('backupFolder');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function clearFolderHandle() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.delete('backupFolder');
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// Folder handle permissions verify kara
+async function verifyPermission(fileHandle, readWrite = true) {
+    const options = {};
+    if (readWrite) {
+        options.mode = 'readwrite';
+    }
+    
+    // Check kara permission ahe ka
+    if ((await fileHandle.queryPermission(options)) === 'granted') {
+        return true;
+    }
+    
+    // Permission maga
+    if ((await fileHandle.requestPermission(options)) === 'granted') {
+        return true;
+    }
+    
+    return false;
+}
+
+// ========================================= */
+// STICKER SIZE FUNCTIONS
+// ========================================= */
+
 function calculateGrid(boxW, boxH) {
     const availableW = PAGE_W - (MARGIN * 2);
     const availableH = PAGE_H - (MARGIN * 2);
@@ -33,7 +112,6 @@ function calculateGrid(boxW, boxH) {
     console.log(`📐 Default Size: ${boxW}x${boxH}cm | Grid: ${COLS}x${ROWS} | Total: ${TOTAL_BOXES}`);
 }
 
-// Function to change sticker size
 function changeStickerSize(sizeValue) {
     const [w, h] = sizeValue.split('x').map(Number);
     calculateGrid(w, h);
@@ -42,15 +120,10 @@ function changeStickerSize(sizeValue) {
     generateBoxButtons();
     updateDropdownOptions();
     
-    // Entries delete kadhun takle ahet - Mix size allowed ahe!
-    // Fakt message dakhva
-    
     alert(`✅ Size set: ${w}cm × ${h}cm\n📄 Ya size sathi page madhe ${TOTAL_BOXES} stickers adjust hotil (${COLS} columns × ${ROWS} rows)\n\n💡 Note: Existing entries delete honar nahit. Pratyek entry tya velchi size save karte.`);
 }
 
-// Update sticker box CSS dynamically
 function updateStickerBoxCSS(w, h) {
-    // Ha fakt default size set karto, actual size createStickerBox madhe inline style ne yeto
     let styleEl = document.getElementById('dynamicStickerStyle');
     if (styleEl) styleEl.remove();
     
@@ -65,7 +138,6 @@ function updateStickerBoxCSS(w, h) {
     document.head.appendChild(styleEl);
 }
 
-// Update dropdown options dynamically
 function updateDropdownOptions() {
     const dropdown = document.getElementById('quickPrintDropdown');
     if (!dropdown) return;
@@ -81,8 +153,6 @@ function updateDropdownOptions() {
         }
     }
     
-    // Ata dropdown madhe 1 te TOTAL_BOXES paryant options dakhva
-    // Pan fakt 1-3 buttons ahet, tar dropdown madhe 4 te TOTAL_BOXES dakhva
     for (let i = 4; i <= TOTAL_BOXES; i++) {
         const opt = document.createElement('option');
         opt.value = i;
@@ -90,6 +160,7 @@ function updateDropdownOptions() {
         dropdown.appendChild(opt);
     }
 }
+
 // ================== LOCAL STORAGE ==================
 const fieldKeys = ['toName', 'toAddress', 'toMobile', 'fromName', 'fromAddress', 'fromMobile'];
 let currentContactType = '';
@@ -266,14 +337,66 @@ window.onclick = function(event) {
 
 function openSettingsModal() {
     document.getElementById('settingsModal').style.display = 'block';
+    updateFolderInfo();
 }
 
 function closeSettingsModal() {
     document.getElementById('settingsModal').style.display = 'none';
 }
 
-// Backup Contacts - Download JSON file
-function backupContacts() {
+// Folder info display kara
+async function updateFolderInfo() {
+    const infoEl = document.getElementById('currentFolderInfo');
+    if (!infoEl) return;
+    
+    try {
+        const handle = await getFolderHandle();
+        if (handle) {
+            const hasPermission = await verifyPermission(handle, false);
+            if (hasPermission) {
+                infoEl.textContent = `📁 Current Folder: ${handle.name}`;
+            } else {
+                infoEl.textContent = `📁 Current Folder: ${handle.name} (Permission maga)`;
+            }
+        } else {
+            infoEl.textContent = `📁 No folder selected (Downloads madhe save hoil)`;
+        }
+    } catch (e) {
+        infoEl.textContent = '';
+    }
+}
+
+// Change Backup Folder
+async function changeBackupFolder() {
+    if (!('showDirectoryPicker' in window)) {
+        alert("❌ Tumcha browser folder select karu det nahi.\n\nKrupaya Chrome kinva Edge vapra.");
+        return;
+    }
+    
+    try {
+        const dirHandle = await window.showDirectoryPicker({
+            mode: 'readwrite',
+            startIn: 'documents'
+        });
+        
+        await saveFolderHandle(dirHandle);
+        
+        alert(`✅ Nava folder select zala!\n\n📁 Folder: ${dirHandle.name}\n\n💡 Ata pasun backup ha folder madhe save hoil.`);
+        
+        updateFolderInfo();
+        
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.log('User ne folder select cancel kela');
+            return;
+        }
+        console.error('Folder select error:', error);
+        alert("❌ Folder select karta aala nahi.");
+    }
+}
+
+// Backup Contacts - Folder madhe save kara (with memory)
+async function backupContacts() {
     const backupData = {
         version: 'v3',
         backupDate: new Date().toISOString(),
@@ -282,25 +405,101 @@ function backupContacts() {
         saved_fields: {}
     };
     
-    // Sagle saved fields pan backup kara
     fieldKeys.forEach(key => {
         backupData.saved_fields[key] = getSavedData(key);
     });
     
-    // JSON file download kara
     const dataStr = JSON.stringify(backupData, null, 2);
+    const fileName = `stickmate_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    
+    // Check kara File System Access API available ahe ka
+    if ('showSaveFilePicker' in window || 'showDirectoryPicker' in window) {
+        try {
+            let fileHandle = null;
+            let savedFolderHandle = null;
+            
+            // Adhi saved folder handle check kara
+            try {
+                savedFolderHandle = await getFolderHandle();
+            } catch (e) {
+                console.log('No saved folder handle');
+            }
+            
+            if (savedFolderHandle) {
+                // Permission verify kara
+                const hasPermission = await verifyPermission(savedFolderHandle, true);
+                
+                if (hasPermission) {
+                    try {
+                        fileHandle = await savedFolderHandle.getFileHandle(fileName, { create: true });
+                        console.log('✅ Saved folder madhe file create zali');
+                    } catch (e) {
+                        console.log('File create failed, folder select karayla sanga');
+                        savedFolderHandle = null;
+                    }
+                } else {
+                    savedFolderHandle = null;
+                }
+            }
+            
+            // Jar saved folder nahi kinva permission nahi tar nava folder select kara
+            if (!fileHandle) {
+                if ('showDirectoryPicker' in window) {
+                    const dirHandle = await window.showDirectoryPicker({
+                        mode: 'readwrite',
+                        startIn: 'documents'
+                    });
+                    
+                    await saveFolderHandle(dirHandle);
+                    fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+                    
+                    alert(`✅ Folder select zala aani save zala!\n\n📁 Folder: ${dirHandle.name}\n\n💡 Next time ha folder automatic vaprel.`);
+                } else {
+                    // Fallback: showSaveFilePicker vapra
+                    fileHandle = await window.showSaveFilePicker({
+                        suggestedName: fileName,
+                        types: [{
+                            description: 'StickMate Backup File',
+                            accept: { 'application/json': ['.json'] }
+                        }]
+                    });
+                }
+            }
+            
+            // File write kara
+            const writable = await fileHandle.createWritable();
+            await writable.write(dataStr);
+            await writable.close();
+            
+            if (savedFolderHandle) {
+                alert(`✅ Backup save zala!\n\n📁 Folder: ${savedFolderHandle.name}\n📄 File: ${fileName}`);
+            }
+            
+            return;
+            
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.log('User ne backup cancel kela');
+                return;
+            }
+            console.error('File save error:', error);
+            // Error aala tar fallback vapra
+        }
+    }
+    
+    // Fallback: Jar File System Access API nahi tar download vapra
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     
     const link = document.createElement('a');
     link.href = url;
-    link.download = `stickmate_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    alert("✅ Backup download zala!\n\nFile tumchya Downloads folder madhe save zali ahe.");
+    alert("✅ Backup download zala!\n\n📁 Tumchya Downloads folder madhe save zala ahe.\n\n💡 Tip: Chrome/Edge vaparla tar tumhi specific folder select karu shakta.");
 }
 
 // Restore Contacts - Upload JSON file
@@ -314,7 +513,6 @@ function restoreContacts(event) {
         try {
             const backupData = JSON.parse(e.target.result);
             
-            // Validate backup file
             if (!backupData.contacts_to && !backupData.contacts_from) {
                 alert("❌ Chukicha file! Ha StickMate cha backup file nahi ahe.");
                 return;
@@ -325,7 +523,6 @@ function restoreContacts(event) {
                 return;
             }
             
-            // Contacts restore kara
             if (backupData.contacts_to) {
                 localStorage.setItem('contacts_to', JSON.stringify(backupData.contacts_to));
             }
@@ -333,7 +530,6 @@ function restoreContacts(event) {
                 localStorage.setItem('contacts_from', JSON.stringify(backupData.contacts_from));
             }
             
-            // Saved fields pan restore kara
             if (backupData.saved_fields) {
                 fieldKeys.forEach(key => {
                     if (backupData.saved_fields[key]) {
@@ -347,10 +543,7 @@ function restoreContacts(event) {
             
             alert(`✅ Restore zala!\n\n📱 TO Contacts: ${toCount}\n📱 FROM Contacts: ${fromCount}`);
             
-            // File input reset kara
             event.target.value = '';
-            
-            // Modal band kara
             closeSettingsModal();
             
         } catch (error) {
@@ -364,7 +557,7 @@ function restoreContacts(event) {
 }
 
 // Clear All Contacts
-function clearAllContacts() {
+async function clearAllContacts() {
     if (!confirm("⚠️ Sagle saved contacts delete hotil. Ha parat parat yeu shakat nahi. Thik ahe ka?")) {
         return;
     }
@@ -376,16 +569,21 @@ function clearAllContacts() {
     localStorage.removeItem('contacts_to');
     localStorage.removeItem('contacts_from');
     
-    // Saved fields pan clear kara
     fieldKeys.forEach(key => {
         localStorage.removeItem('saved_' + key);
     });
+    
+    // Folder handle pan clear kara
+    try {
+        await clearFolderHandle();
+    } catch (e) {
+        console.log('Folder handle clear failed:', e);
+    }
     
     alert("✅ Sagle contacts delete zale.");
     closeSettingsModal();
 }
 
-// Settings Modal bahar click kelyavar band kara
 window.addEventListener('click', (event) => {
     const settingsModal = document.getElementById('settingsModal');
     if (event.target === settingsModal) {
@@ -406,7 +604,6 @@ function generateBoxButtons() {
         }
     }
     
-    // Fakt 3 buttons dakhva (1, 2, 3)
     const maxButtons = Math.min(3, TOTAL_BOXES);
     for (let i = 1; i <= maxButtons; i++) {
         const btn = document.createElement('button');
@@ -418,20 +615,16 @@ function generateBoxButtons() {
     }
 }
 
-// Dropdown madhun box select kelyavar print kara
 function printSelectedBox(boxNumber) {
     if (!boxNumber) return;
     printSingleBox(parseInt(boxNumber));
-    // Print zalyavar dropdown reset kara
     document.getElementById('quickPrintDropdown').value = '';
 }
 
 // ================== ENTRY LOGIC ==================
 function addEntry() {
-    // Ata maximum limit nahi ahe, karan mix size ahet
     const data = getFormData();
     
-    // Tya velchi size entry madhe save kara
     data.sizeW = BOX_W;
     data.sizeH = BOX_H;
     data.sizeLabel = `${BOX_W}x${BOX_H}`;
@@ -500,10 +693,8 @@ function getPosition(boxNumber) {
 
 // ================== CREATE STICKER BOX ==================
 function createStickerBox(boxNumber, data, customPos = null, customSize = null) {
-    // Jar custom position dileli asel tar ti vapra, nahitar getPosition vapra
     const pos = customPos || getPosition(boxNumber);
     
-    // Jar custom size dileli asel tar ti vapra, nahitar data madhli size vapra
     const w = customSize ? customSize.w : (data.sizeW || BOX_W);
     const h = customSize ? customSize.h : (data.sizeH || BOX_H);
     
@@ -511,7 +702,7 @@ function createStickerBox(boxNumber, data, customPos = null, customSize = null) 
     box.className = 'sticker-box';
     box.style.left = pos.left + 'cm';
     box.style.top = pos.top + 'cm';
-    box.style.width = (w - 0.6) + 'cm';  // Border aani padding sathi 0.6cm kami
+    box.style.width = (w - 0.6) + 'cm';
     box.style.height = (h - 0.6) + 'cm';
 
     const shortAddress = data.fromAddress.length > 12 
@@ -545,7 +736,6 @@ function printSingleBox(boxNumber) {
     }
     saveAllFields();
     
-    // Data madhe current size save kara
     data.sizeW = BOX_W;
     data.sizeH = BOX_H;
     data.sizeLabel = `${BOX_W}x${BOX_H}`;
@@ -556,6 +746,7 @@ function printSingleBox(boxNumber) {
     a4Page.appendChild(box);
     window.print();
 }
+
 function printAll() {
     if (entries.length === 0) {
         alert("कृपया आधी Entry Add करा!");
@@ -564,8 +755,6 @@ function printAll() {
     saveAllFields();
     a4Page.innerHTML = '';
     
-    // Mix size sathi dynamic positioning
-    // Pratyek entry cha size vaprun page var yogy position madhe basva
     let currentX = MARGIN;
     let currentY = MARGIN;
     let rowHeight = 0;
@@ -574,17 +763,13 @@ function printAll() {
         const w = data.sizeW || BOX_W;
         const h = data.sizeH || BOX_H;
         
-        // Jar current row madhe jaga nasel tar next row la ja
         if (currentX + w > PAGE_W - MARGIN) {
             currentX = MARGIN;
             currentY += rowHeight;
             rowHeight = 0;
         }
         
-        // Jar page khali sampat asel tar nava page (kinva warning)
         if (currentY + h > PAGE_H - MARGIN) {
-            // Ata fakt ekach page ahe, tar ithe thambva
-            // (Future madhe multiple pages sathi)
             console.warn("Page full! Kahi stickers adjust zale nahit.");
             return;
         }
@@ -620,44 +805,6 @@ function previewCurrentEntry() {
     document.getElementById('previewModal').style.display = 'block';
 }
 
-// ========================================= */
-// GENERATE ALL 21 STICKERS AUTO
-// ========================================= */
-function generateAllStickers() {
-    const data = getFormData();
-    
-    // Check kara ki TO details bharle ahet ka
-    if (data.toName === "N/A" && data.toAddress === "N/A" && data.toMobile === "N/A") {
-        alert("कृपया आधी TO आणि FROM details भरा!");
-        return;
-    }
-    
-    // Current size nusar kiti stickers page var basu shaktat te calculate kara
-    const availableW = PAGE_W - (MARGIN * 2);
-    const availableH = PAGE_H - (MARGIN * 2);
-    const cols = Math.floor(availableW / BOX_W);
-    const rows = Math.floor(availableH / BOX_H);
-    const totalStickers = cols * rows;
-    
-    // Entries clear kara aani sagle stickers auto-generate kara
-    entries = [];
-    for (let i = 0; i < totalStickers; i++) {
-        const stickerData = { ...data }; // Copy data
-        stickerData.sizeW = BOX_W;
-        stickerData.sizeH = BOX_H;
-        stickerData.sizeLabel = `${BOX_W}x${BOX_H}`;
-        entries.push(stickerData);
-    }
-    
-    renderEntryList();
-    saveAllFields();
-    
-    alert(`✅ ${totalStickers} stickers auto-generate zale! (${cols} columns × ${rows} rows)\nAta print kara.`);
-    
-    // Direct print kara
-    printAll();
-}
-
 function previewEntry(index) {
     if (index < 0 || index >= entries.length) {
         alert("Entry सापडली नाही!");
@@ -679,7 +826,6 @@ function renderPreviewBox(data) {
     const tempBox = document.createElement('div');
     tempBox.className = 'sticker-box';
     
-    // Size dynamic kara
     const w = data.sizeW || BOX_W;
     const h = data.sizeH || BOX_H;
     tempBox.style.width = (w - 0.6) + 'cm';
@@ -728,7 +874,6 @@ function printPreview() {
     
     a4Page.innerHTML = '';
     
-    // Preview data madhli size vapra
     const w = previewData.sizeW || BOX_W;
     const h = previewData.sizeH || BOX_H;
     
@@ -755,10 +900,43 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ========================================= */
-// ENTER KEY NAVIGATION (Next Field madhe shift)
+// GENERATE ALL STICKERS AUTO
+// ========================================= */
+function generateAllStickers() {
+    const data = getFormData();
+    
+    if (data.toName === "N/A" && data.toAddress === "N/A" && data.toMobile === "N/A") {
+        alert("कृपया आधी TO आणि FROM details भरा!");
+        return;
+    }
+    
+    const availableW = PAGE_W - (MARGIN * 2);
+    const availableH = PAGE_H - (MARGIN * 2);
+    const cols = Math.floor(availableW / BOX_W);
+    const rows = Math.floor(availableH / BOX_H);
+    const totalStickers = cols * rows;
+    
+    entries = [];
+    for (let i = 0; i < totalStickers; i++) {
+        const stickerData = { ...data };
+        stickerData.sizeW = BOX_W;
+        stickerData.sizeH = BOX_H;
+        stickerData.sizeLabel = `${BOX_W}x${BOX_H}`;
+        entries.push(stickerData);
+    }
+    
+    renderEntryList();
+    saveAllFields();
+    
+    alert(`✅ ${totalStickers} stickers auto-generate zale! (${cols} columns × ${rows} rows)\nAta print kara.`);
+    
+    printAll();
+}
+
+// ========================================= */
+// ENTER KEY NAVIGATION
 // ========================================= */
 document.addEventListener('DOMContentLoaded', () => {
-    // Sagle input fields cha order
     const inputOrder = [
         'toName',
         'toAddress',
@@ -785,7 +963,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         nextField.select();
                     }
                 } else {
-                    // Shevatcha field (insurance) madhe Enter dabli tar Add to List
                     addEntry();
                 }
             }
@@ -892,7 +1069,7 @@ window.addEventListener('appinstalled', () => {
 // ========================================= */
 // FORCE UPDATE SYSTEM v3 - AUTO UPDATE CHECK
 // ========================================= */
-const APP_VERSION = 'v3'; // Update karta tar v4, v5 kara
+const APP_VERSION = 'v3';
 
 function showUpdatePopup() {
     if (document.getElementById('updatePopup')) {
@@ -1015,7 +1192,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // INITIALIZE
 // ========================================= */
 window.onload = () => {
-    // Initial grid calculation
     calculateGrid(6, 3.5);
     updateStickerBoxCSS(6, 3.5);
     updateDropdownOptions();
@@ -1028,14 +1204,13 @@ window.onload = () => {
         setTimeout(showInstallButton, 1000);
     }
 };
+
 // ========================================= */
 // KEYBOARD SHORTCUTS
 // ========================================= */
 
 document.addEventListener('keydown', (e) => {
-    // ========================================= */
     // ALT + P = PREVIEW
-    // ========================================= */
     if (e.altKey && (e.key === 'p' || e.key === 'P')) {
         e.preventDefault();
         console.log('⌨️ Alt+P - Preview');
@@ -1043,16 +1218,11 @@ document.addEventListener('keydown', (e) => {
         return;
     }
     
-    // ========================================= */
-    // CTRL + P = PRINT (Default browser print)
-    // ========================================= */
+    // CTRL + P = PRINT
     if (e.ctrlKey && (e.key === 'p' || e.key === 'P')) {
-        // Browser cha default print dialog ughadel
-        // Aapan fakt printAll() call karto
         e.preventDefault();
         console.log('⌨️ Ctrl+P - Print');
         
-        // Jar form madhe data asel tar print kara
         const data = getFormData();
         if (data.toName !== "N/A" || data.toAddress !== "N/A" || data.toMobile !== "N/A") {
             printSingleBox(1);
@@ -1064,9 +1234,7 @@ document.addEventListener('keydown', (e) => {
         return;
     }
     
-    // ========================================= */
-    // CTRL + S = SAVE TO CONTACTS (TO + FROM)
-    // ========================================= */
+    // CTRL + S = SAVE TO CONTACTS
     if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
         console.log('⌨️ Ctrl+S - Save to Contacts');
@@ -1081,7 +1249,6 @@ document.addEventListener('keydown', (e) => {
         
         let savedCount = 0;
         
-        // TO contact save kara (Jar name asel tar)
         if (toName) {
             saveContact('to', {
                 name: toName,
@@ -1092,7 +1259,6 @@ document.addEventListener('keydown', (e) => {
             console.log('✅ TO contact saved:', toName);
         }
         
-        // FROM contact save kara (Jar name asel tar)
         if (fromName) {
             saveContact('from', {
                 name: fromName,
@@ -1103,10 +1269,8 @@ document.addEventListener('keydown', (e) => {
             console.log('✅ FROM contact saved:', fromName);
         }
         
-        // Sagle fields pan save kara
         saveAllFields();
         
-        // User la message dाखवा
         if (savedCount > 0) {
             alert(`✅ ${savedCount} contact${savedCount > 1 ? 's' : ''} save zala${savedCount > 1 ? 't' : ''}!\n\n` +
                   `📱 TO Contacts मध्ये पाहण्यासाठी TO Name च्या शेजारी 👥 बटण दाबा..\n` +
@@ -1116,20 +1280,13 @@ document.addEventListener('keydown', (e) => {
         }
         return;
     }
-    
-    // ========================================= */
-    // ENTER = NEXT FIELD (Existing)
-    // ========================================= */
-    // Ha code existing ahe, tyala thevू naka
 });
 
 // ========================================= */
 // PLUS BUTTON SHORTCUT (Add to List)
 // ========================================= */
 document.addEventListener('keydown', (e) => {
-    // Jar user "+" key dabli tar Add to List
     if (e.key === '+' || e.key === '=') {
-        // Jar input field madhe nasel tar
         const activeElement = document.activeElement;
         const isInputFocused = activeElement && 
             (activeElement.tagName === 'INPUT' || 
